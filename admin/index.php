@@ -707,7 +707,7 @@ if (!empty($_GET['search'])) {
         'zajal' => ['url' => 'https://zajal.cc/fahras-api.php?token=354afdf5357c&search=' . $searchEncoded, 'label' => 'زجل'],
         'jadal' => ['url' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=jadal&search=' . $searchEncoded, 'label' => 'جدل'],
         'namaa' => ['url' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=erp&search=' . $searchEncoded, 'label' => 'نماء'],
-        'bseel' => ['url' => 'https://bseel.com/api-v1.php?search=' . $searchEncoded, 'label' => 'بسيل'],
+        'bseel' => ['url' => 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&search=' . $searchEncoded, 'label' => 'بسيل'],
     ];
 
     $remoteUrls = [];
@@ -726,6 +726,11 @@ if (!empty($_GET['search'])) {
         $decoded = json_decode($raw, true);
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded)) {
             $remote_errors[] = ['ok' => false, 'label' => $api['label'], 'data' => [], 'error' => _e('Invalid response format')];
+            continue;
+        }
+
+        if (isset($decoded['error'])) {
+            $remote_errors[] = ['ok' => false, 'label' => $api['label'], 'data' => [], 'error' => $decoded['error']];
             continue;
         }
 
@@ -898,9 +903,9 @@ if (!empty($_GET['search'])) {
                 $people_link = 'https://jadal.aqssat.co/fahras/people.php?token=b83ba7a49b72&db=erp&client=' . $key['cid'];
                 $relations_link = 'https://jadal.aqssat.co/fahras/relations.php?token=b83ba7a49b72&db=erp&client=' . $key['cid'];
             } elseif ($account_name === 'عمار' || $account_name === 'بسيل' || $source === 'bseel') {
-                $people_link = 'https://bseel.com/people-api4.php?client=' . $key['id'];
-                $attachments_link = 'https://bseel.com/attachments.php?client=' . $key['id'];
-                $relations_link = 'https://bseel.com/parties.php?contract=' . $key['id'];
+                $people_link = 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=people&client=' . $key['id'];
+                $attachments_link = 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=attachments&client=' . $key['id'];
+                $relations_link = 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=parties&contract=' . $key['id'];
             } else {
                 $attachments_link = '/admin/attachments?client=' . $key['id'];
             }

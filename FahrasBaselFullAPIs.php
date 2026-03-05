@@ -118,7 +118,6 @@ function clientsBaseQuery($topClause, $whereClause) {
             m.contract_num,
             m.name1,
             m.num1,
-            m.work_job,
             m.job,
             m.HOME_ADRESS,
             m.JOB_LOCATION,
@@ -135,8 +134,8 @@ function clientsBaseQuery($topClause, $whereClause) {
                 [المعرف],
                 MAX(created_on) AS created_date,
                 MAX(date1) AS sell_date,
-                MAX(court) AS court,
-                MAX(Finished) AS Finished,
+                MAX(CAST(court AS int)) AS court,
+                MAX(CAST(Finished AS int)) AS Finished,
                 SUM(ISNULL(many,0)) + SUM(ISNULL(court_tax,0))
                 + SUM(ISNULL(tax_court,0)) + SUM(ISNULL(Car_tax,0)) AS total_original
             FROM finance
@@ -173,7 +172,7 @@ function buildClientRow($row) {
         'status'           => (!isset($row['Finished']) || $row['Finished'] != 1) ? 'نشط' : 'منتهي',
         'phone'            => $row['first_phone'] ?? '',
         'party_type'       => 'عميل',
-        'work'             => ($row['work_job'] ?? '') !== '' ? $row['work_job'] : ($row['job'] ?? ''),
+        'work'             => $row['job'] ?? '',
         'home_address'     => $row['HOME_ADRESS'] ?? '',
         'work_address'     => $row['JOB_LOCATION'] ?? '',
         'court_status'     => (!isset($row['court']) || $row['court'] != 1) ? 'لا يوجد' : 'مشتكى عليه',
@@ -320,7 +319,7 @@ function handleParties($conn) {
     $n = 0;
     foreach ($rows as $row) {
         $n++;
-        $work   = ($row['work_job'] ?? '') !== '' ? $row['work_job'] : ($row['job'] ?? '');
+        $work   = $row['job'] ?? '';
         $phones = isset($row['phones_list']) ? explode('||', $row['phones_list']) : [];
 
         echo '<tr class="table-dark"><th colspan="2" class="text-nowrap">طرف رقم ' . $n . '</th></tr>';
@@ -425,10 +424,10 @@ function handleJobs($conn, $search) {
 
     $pattern = '%' . $search . '%';
     $sql = clientsBaseQuery('TOP 50',
-        "WHERE m.work_job LIKE ? OR m.job LIKE ?"
+        "WHERE m.job LIKE ?"
     );
 
-    $stmt = sqlsrv_query($conn, $sql, [$pattern, $pattern]);
+    $stmt = sqlsrv_query($conn, $sql, [$pattern]);
     if ($stmt === false) {
         echo json_encode([], JSON_UNESCAPED_UNICODE);
         return;
