@@ -32,6 +32,15 @@ $lang = $_COOKIE['language'] ?? 'ar';
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?=_e('فهرس')?> - <?=_e('Login')?></title>
+    <meta property="og:title" content="فهرس - نظام فهرسة العملاء وكشف المخالفات">
+    <meta property="og:description" content="نظام متكامل لفهرسة عملاء شركات التقسيط الأردنية وكشف المخالفات التعاقدية تلقائياً">
+    <meta property="og:image" content="https://fahras.aqssat.co/admin/img/social-preview.png">
+    <meta property="og:url" content="https://fahras.aqssat.co/admin/">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ar_JO">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="فهرس - نظام فهرسة العملاء وكشف المخالفات">
+    <meta name="twitter:image" content="https://fahras.aqssat.co/admin/img/social-preview.png">
     <?php if ($lang == 'ar') { ?>
     <link rel="stylesheet" href="https://cdn.rtlcss.com/bootstrap/3.3.7/css/bootstrap.min.css"
           integrity="sha384-cSfiDrYfMj9eYCidq//oGXEkMc0vuTxHXizrMOFAaPsLt1zoCUVnSsURN+nef1lj"
