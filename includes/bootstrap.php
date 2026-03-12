@@ -16,8 +16,8 @@ require_once __DIR__ . '/smplPDO.php';
 
 $db_host = 'localhost';
 $db_name = 'fahras_db';
-$db_user = 'osama';
-$db_pass = 'OsamaDB123';
+$db_user = getenv('FAHRAS_DB_USER') ?: 'root';
+$db_pass = getenv('FAHRAS_DB_PASS') ?: '';
 
 $db = new smplPDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass);
 

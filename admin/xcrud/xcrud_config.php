@@ -3,8 +3,8 @@ class Xcrud_config
 {
     // default connection
     public static $dbname = 'fahras_db'; // Your database name
-    public static $dbuser = 'osama'; // Your database username
-    public static $dbpass = 'OsamaDB123'; // Your database password
+    public static $dbuser = 'root';
+    public static $dbpass = '';
     public static $dbhost = 'localhost'; // Your database host, 'localhost' is default.
     
     
@@ -189,3 +189,6 @@ class Xcrud_config
     
 
 }
+
+if (getenv('FAHRAS_DB_USER')) Xcrud_config::$dbuser = getenv('FAHRAS_DB_USER');
+if (getenv('FAHRAS_DB_PASS') !== false) Xcrud_config::$dbpass = getenv('FAHRAS_DB_PASS');
