@@ -147,12 +147,22 @@ function analyzeSearchResults($allResults) {
             $violatingEntry = $lastActive;
             $companyList = implode(' و ', $uniqueActiveNames);
             $violationMessage = _e('Client is active with') . ' ' . $companyList . ' - ' . _e('remaining amount exceeds') . ' 150 - ' . _e('selling is not allowed');
-        } elseif (count($uniqueActiveNames) === 1 && count($uniqueContactNames) >= 1) {
-            $allNames = array_merge($uniqueActiveNames, $uniqueContactNames);
-            if (count(array_unique($allNames)) >= 2) {
+        } elseif (count($uniqueActiveNames) === 1) {
+            $activeAccount = $uniqueActiveNames[0];
+            $activeEntry = $activeAccounts[$activeAccount];
+            $activeRemaining = round((float)($activeEntry['remaining_amount'] ?? 0), 2);
+
+            if (count($uniqueContactNames) >= 1) {
+                $allNames = array_merge($uniqueActiveNames, $uniqueContactNames);
                 $needContact = true;
                 $companyList = implode(' و ', array_unique($allNames));
                 $contactMessage = _e('Client is active with') . ' ' . $companyList . ' - ' . _e('Contact to verify');
+            } else {
+                $hasViolation = true;
+                $violationMessage = _e('Client is active with') . ' ' . $activeAccount
+                    . ' - ' . _e('remaining amount') . ' ' . $activeRemaining
+                    . ' - ' . _e('selling is not allowed');
+                $entitledEntry = $activeEntry;
             }
         } elseif (count($uniqueContactNames) >= 2) {
             $needContact = true;
