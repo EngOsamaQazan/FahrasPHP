@@ -208,44 +208,69 @@ function analyzeSearchResults($allResults) {
                     'results'        => $entries,
                 ];
             } else {
+                $belowThreshold = [];
+                $finishedWith   = [];
+                $unknownStatus  = [];
                 $firstNonExcluded = $first;
-                foreach ($entries as $chk) {
-                    if (!isExcludedAccount(resolveAccountName($chk))) { $firstNonExcluded = $chk; break; }
-                }
-                $neAccount    = resolveAccountName($firstNonExcluded);
-                $neStatus     = strtolower(trim($firstNonExcluded['status'] ?? ''));
-                $neRemaining  = $firstNonExcluded['remaining_amount'] ?? null;
-                $neFinished   = in_array($neStatus, ['منتهي', 'finished', 'completed', 'closed']);
-                $neCanceled   = in_array($neStatus, ['ملغي', 'canceled', 'cancelled']);
 
-                if ($neFinished || $neCanceled) {
+                foreach ($entries as $chk) {
+                    $chkAccount = resolveAccountName($chk);
+                    if (isExcludedAccount($chkAccount)) continue;
+
+                    if ($firstNonExcluded === $first && isExcludedAccount(resolveAccountName($first))) {
+                        $firstNonExcluded = $chk;
+                    }
+
+                    $chkStatus    = strtolower(trim($chk['status'] ?? ''));
+                    $chkRemaining = $chk['remaining_amount'] ?? null;
+                    $chkFinished  = in_array($chkStatus, ['منتهي', 'finished', 'completed', 'closed']);
+                    $chkCanceled  = in_array($chkStatus, ['ملغي', 'canceled', 'cancelled']);
+
+                    if ($chkFinished || $chkCanceled) {
+                        $finishedWith[$chkAccount] = true;
+                    } elseif ($chkRemaining !== null && (float)$chkRemaining < 150) {
+                        $belowThreshold[$chkAccount] = true;
+                    } elseif ($chkRemaining !== null && (float)$chkRemaining >= 150) {
+                        // should have been caught above, but just in case
+                    } else {
+                        $unknownStatus[$chkAccount] = true;
+                    }
+                }
+
+                $neAccount = resolveAccountName($firstNonExcluded);
+
+                if (!empty($unknownStatus)) {
+                    $allNames = array_unique(array_merge(
+                        array_keys($belowThreshold), array_keys($finishedWith), array_keys($unknownStatus)
+                    ));
                     $analyzed[] = [
-                        'recommendation' => 'can_sell',
-                        'message'        => _e('Contract finished with') . ' ' . $neAccount . ' - ' . _e('selling is allowed'),
+                        'recommendation' => 'contact_first',
+                        'message'        => _e('Contact') . ' ' . implode(' و ', $allNames) . ' ' . _e('to verify client status'),
                         'first_account'  => $neAccount,
                         'first_phone'    => getAccountPhone($firstNonExcluded),
                         'results'        => $entries,
                     ];
-                } elseif ($neRemaining !== null && (float)$neRemaining >= 150) {
+                } elseif (!empty($belowThreshold)) {
+                    $allNames = array_unique(array_merge(array_keys($belowThreshold), array_keys($finishedWith)));
                     $analyzed[] = [
-                        'recommendation' => 'cannot_sell',
-                        'message'        => _e('Client is active with') . ' ' . $neAccount . ' - ' . _e('remaining amount exceeds') . ' 150 - ' . _e('selling is not allowed'),
+                        'recommendation' => 'can_sell',
+                        'message'        => _e('Remaining amount below threshold with') . ' ' . implode(' و ', $allNames) . ' - ' . _e('selling is allowed'),
                         'first_account'  => $neAccount,
                         'first_phone'    => getAccountPhone($firstNonExcluded),
                         'results'        => $entries,
                     ];
-                } elseif ($neRemaining !== null && (float)$neRemaining < 150) {
+                } elseif (!empty($finishedWith)) {
                     $analyzed[] = [
                         'recommendation' => 'can_sell',
-                        'message'        => _e('Remaining amount below threshold with') . ' ' . $neAccount . ' - ' . _e('selling is allowed'),
+                        'message'        => _e('Contract finished with') . ' ' . implode(' و ', array_keys($finishedWith)) . ' - ' . _e('selling is allowed'),
                         'first_account'  => $neAccount,
                         'first_phone'    => getAccountPhone($firstNonExcluded),
                         'results'        => $entries,
                     ];
                 } else {
                     $analyzed[] = [
-                        'recommendation' => 'contact_first',
-                        'message'        => _e('Contact') . ' ' . $neAccount . ' ' . _e('to verify client status'),
+                        'recommendation' => 'can_sell',
+                        'message'        => _e('Client not found with other companies - selling is allowed'),
                         'first_account'  => $neAccount,
                         'first_phone'    => getAccountPhone($firstNonExcluded),
                         'results'        => $entries,
