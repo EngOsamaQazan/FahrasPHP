@@ -7,8 +7,8 @@ if (!isset($token)) {
   <footer class="footer hidden-print">
     <div class="container">
       <p class="text-muted">
-        <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('Made with')?> <i class="red fa fa-heart"></i> <?=_e('by MÜJEER')?></a>
-          <span class="pull-right">&copy; <?=_e('Fahras')?> <?=date('Y')?></span>
+        <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('صُنع بـ')?> <i class="red fa fa-heart"></i> <?=_e('بواسطة MÜJEER')?></a>
+          <span class="pull-right">&copy; <?=_e('فهرس')?> <?=date('Y')?></span>
         </p>
     </div>
   </footer>
@@ -29,17 +29,40 @@ if (!isset($token)) {
 		jQuery(document).on("ready xcrudafterrequest", function(event, container) {
 
 		    if (container) {
-		        jQuery(container).find("select").select2({theme: "bootstrap", dir: "<?=_e('ltr')?>"});
+		        jQuery(container).find("select").select2({theme: "bootstrap", dir: "<?=_e('rtl')?>"});
 		    } else {
-		        jQuery(".xcrud").find("select").select2({theme: "bootstrap", dir: "<?=_e('ltr')?>"});
+		        jQuery(".xcrud").find("select").select2({theme: "bootstrap", dir: "<?=_e('rtl')?>"});
 		    }
 		});
 		jQuery(document).on("xcrudbeforedepend", function(event, container, data) {
 		    jQuery(container).find('select[name="' + data.name + '"]').select2("destroy");
 		});
 		jQuery(document).on("xcrudafterdepend", function(event, container, data) {
-		    jQuery(container).find('select[name="' + data.name + '"]').select2({theme: "bootstrap", dir: "<?=_e('ltr')?>"});
+		    jQuery(container).find('select[name="' + data.name + '"]').select2({theme: "bootstrap", dir: "<?=_e('rtl')?>"});
 		});
+
+		function toggleFahrasTheme(e) {
+		    if (e) e.preventDefault();
+		    var current = localStorage.getItem('fahras_theme') || 'dark';
+		    var next = (current === 'dark') ? 'light' : 'dark';
+		    localStorage.setItem('fahras_theme', next);
+		    document.cookie = 'fahras_theme=' + next + ';path=/;max-age=' + (86400 * 365);
+		    var link = document.getElementById('dark-theme-link');
+		    var icon = document.getElementById('themeToggleIcon');
+		    if (next === 'light') {
+		        if (link) link.disabled = true;
+		        document.body.className = document.body.className.replace('dark-theme', 'light-theme');
+		        document.documentElement.classList.add('light-theme');
+		        document.documentElement.classList.remove('dark-theme');
+		        if (icon) { icon.className = 'fal fa-moon'; }
+		    } else {
+		        if (link) link.disabled = false;
+		        document.body.className = document.body.className.replace('light-theme', 'dark-theme');
+		        document.documentElement.classList.add('dark-theme');
+		        document.documentElement.classList.remove('light-theme');
+		        if (icon) { icon.className = 'fal fa-sun'; }
+		    }
+		}
 	</script>    
   </body>
 </html>

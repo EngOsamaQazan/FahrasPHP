@@ -1,22 +1,24 @@
 <?php
 $token = 'mojeer';
-$page_title = 'Dashboard';
+$page_title = 'لوحة التحكم';
 include 'header.php';
 
 require_permission('dashboard', 'view');
 
 require_once __DIR__ . '/../includes/violation_engine.php';
 
+// formatTo12h() is now in bootstrap.php
+
 function safe_remote_search($url, $label = '') {
     $raw = curl_load($url);
 
     if ($raw === false || $raw === null || trim($raw) === '') {
-        return ['ok' => false, 'label' => $label, 'data' => [], 'error' => _e('No response from server')];
+        return ['ok' => false, 'label' => $label, 'data' => [], 'error' => _e('لا استجابة من الخادم')];
     }
 
     $decoded = json_decode($raw, true);
     if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded)) {
-        return ['ok' => false, 'label' => $label, 'data' => [], 'error' => _e('Invalid response format')];
+        return ['ok' => false, 'label' => $label, 'data' => [], 'error' => _e('صيغة استجابة غير صالحة')];
     }
 
     if (isset($decoded['data']) && is_array($decoded['data'])) {
@@ -466,8 +468,17 @@ if (user_can('clients', 'view')) {
 
 .group-banner .banner-phone {
     font-size: 12px;
-    color: rgba(255,255,255,0.4);
+    color: rgba(255,255,255,0.7);
     direction: ltr;
+    background: rgba(255,255,255,0.1);
+    padding: 6px 14px;
+    border-radius: 20px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.group-banner .banner-phone:hover {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
 }
 
 /* ─── Contract entry cards (replaces table rows) ─── */
@@ -603,34 +614,34 @@ if (user_can('clients', 'view')) {
 <div class="fahras-page">
     <div class="container">
         <div class="fahras-brand">
-            <img src="img/fahras-logo.png" alt="<?= _e('Fahras') ?>">
+            <img src="img/fahras-logo.png" alt="<?= _e('فهرس') ?>">
             <div class="fahras-brand-text">
-                <h1><?= _e('Fahras') ?></h1>
-                <p><?= _e('Client Indexing & Violation Detection System') ?></p>
+                <h1><?= _e('فهرس') ?></h1>
+                <p><?= _e('نظام فهرسة العملاء واكتشاف المخالفات') ?></p>
+                </div>
             </div>
-        </div>
 
         <?php if (user_can('clients', 'view')) { ?>
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon"><i class="fad fa-users"></i></div>
                 <div class="stat-value"><?= number_format($totalClients) ?></div>
-                <div class="stat-label"><?= _e('Total Clients') ?></div>
-            </div>
+                <div class="stat-label"><?= _e('إجمالي العملاء') ?></div>
+        </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fad fa-building"></i></div>
                 <div class="stat-value"><?= number_format($totalAccounts) ?></div>
-                <div class="stat-label"><?= _e('Accounts') ?></div>
+                <div class="stat-label"><?= _e('الشركات') ?></div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fad fa-exclamation-triangle"></i></div>
                 <div class="stat-value"><?= $monthViolations ?></div>
-                <div class="stat-label"><?= _e('Violations This Month') ?></div>
+                <div class="stat-label"><?= _e('مخالفات هذا الشهر') ?></div>
             </div>
             <div class="stat-card danger">
                 <div class="stat-icon"><i class="fad fa-file-invoice-dollar"></i></div>
                 <div class="stat-value"><?= $unpaidViolations ?></div>
-                <div class="stat-label"><?= _e('Unpaid Violations') ?></div>
+                <div class="stat-label"><?= _e('مخالفات غير مدفوعة') ?></div>
             </div>
         </div>
         <?php } ?>
@@ -640,12 +651,12 @@ if (user_can('clients', 'view')) {
                 <i class="fa fa-search search-icon"></i>
                 <input type="text" id="search-input" name="search"
                        value="<?= htmlspecialchars($_GET['search'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                       placeholder="<?= _e('Search by name, national ID, phone number...') ?>"
+                       placeholder="<?= _e('البحث بالاسم أو الرقم الوطني أو رقم الهاتف...') ?>"
                        autocomplete="off" autofocus />
-                <button type="submit"><i class="fa fa-search"></i> <?= _e('Search') ?></button>
+                <button type="submit"><i class="fa fa-search"></i> <?= _e('بحث') ?></button>
             </div>
-            <div class="search-hint"><?= _e('Supports fuzzy search - typos and character variations are handled automatically') ?></div>
-        </form>
+            <div class="search-hint"><?= _e('يدعم البحث التقريبي - يتعامل مع الأخطاء الإملائية والتشكيل تلقائياً') ?></div>
+    </form>
 
 <?php
 $allResults = [];
@@ -690,7 +701,7 @@ if (!empty($_GET['search'])) {
         $stmt = $db->prepare("
             SELECT a.*, (SELECT COUNT(*) FROM attachments WHERE client = a.id) AS attachments,
                    'local' AS _source
-            FROM clients a
+        FROM clients a
             WHERE $whereSQL
             LIMIT $perSourceLimit
         ");
@@ -719,13 +730,13 @@ if (!empty($_GET['search'])) {
         $error = $multiResults[$srcKey]['error'] ?? null;
 
         if ($error || $raw === null || trim($raw) === '') {
-            $remote_errors[] = ['ok' => false, 'label' => $api['label'], 'data' => [], 'error' => $error ?: _e('No response from server')];
+            $remote_errors[] = ['ok' => false, 'label' => $api['label'], 'data' => [], 'error' => $error ?: _e('لا استجابة من الخادم')];
             continue;
         }
 
         $decoded = json_decode($raw, true);
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded)) {
-            $remote_errors[] = ['ok' => false, 'label' => $api['label'], 'data' => [], 'error' => _e('Invalid response format')];
+            $remote_errors[] = ['ok' => false, 'label' => $api['label'], 'data' => [], 'error' => _e('صيغة استجابة غير صالحة')];
             continue;
         }
 
@@ -746,9 +757,9 @@ if (!empty($_GET['search'])) {
         foreach ($remote_errors as $e) { $failedNames[] = $e['label']; }
         $failedList = implode('، ', $failedNames);
         echo '<div class="remote-warning">';
-        echo '<b><i class="fa fa-exclamation-triangle"></i> ' . _e('Warning') . ':</b> ';
-        echo _e('This search does not include') . ' <b>' . htmlspecialchars($failedList, ENT_QUOTES, 'UTF-8') . '</b> ';
-        echo _e('due to connection failure. Please retry later or contact the company directly to verify.');
+        echo '<b><i class="fa fa-exclamation-triangle"></i> ' . _e('تحذير') . ':</b> ';
+        echo _e('هذا البحث لا يشمل') . ' <b>' . htmlspecialchars($failedList, ENT_QUOTES, 'UTF-8') . '</b> ';
+        echo _e('بسبب فشل الاتصال. يرجى المحاولة لاحقاً أو التواصل مع الشركة للتأكد.');
         foreach ($remote_errors as $e) {
             echo '<div class="api-error-item">';
             echo '<span class="api-co">' . htmlspecialchars($e['label'], ENT_QUOTES, 'UTF-8') . '</span>';
@@ -760,8 +771,8 @@ if (!empty($_GET['search'])) {
 
     echo '<div class="results-toolbar">';
     echo '<div class="results-bar" style="flex:1">';
-    echo '<h4><i class="fa fa-list-ul"></i> ' . _e('Search results for') . ': <b>' . htmlspecialchars($q, ENT_QUOTES, 'UTF-8') . '</b></h4>';
-    echo '<span class="badge-count">' . count($allResults) . ' ' . _e('results') . '</span>';
+    echo '<h4><i class="fa fa-list-ul"></i> ' . _e('نتائج البحث عن') . ': <b>' . htmlspecialchars($q, ENT_QUOTES, 'UTF-8') . '</b></h4>';
+    echo '<span class="badge-count">' . count($allResults) . ' ' . _e('نتيجة') . '</span>';
     echo '</div>';
     echo '<button class="btn-screenshot" id="btn-report" onclick="captureResults()"><i class="fa fa-clipboard"></i> نسخ التقرير</button>';
     echo '</div>';
@@ -774,7 +785,7 @@ if (!empty($_GET['search'])) {
     try {
         $analyzed = analyzeSearchResults($allResults);
     } catch (Throwable $e) {
-        echo '<div class="remote-warning"><b>' . _e('Analysis error') . ':</b> ' . htmlspecialchars($e->getMessage()) . '</div>';
+        echo '<div class="remote-warning"><b>' . _e('خطأ في التحليل') . ':</b> ' . htmlspecialchars($e->getMessage()) . '</div>';
     }
 
     $partyWarnings = [];
@@ -820,23 +831,23 @@ if (!empty($_GET['search'])) {
     if (empty($analyzed)) {
         echo '<div class="no-results">';
         echo '<i class="fa fa-search"></i>';
-        echo '<p>' . _e('No results found') . '</p>';
+        echo '<p>' . _e('لم يتم العثور على نتائج') . '</p>';
         echo '</div>';
     }
 
     if (!empty($partyWarnings)) {
         echo '<div class="party-alert">';
-        echo '<h5><i class="fa fa-users"></i> ' . _e('Contract Party Violations') . '</h5>';
+        echo '<h5><i class="fa fa-users"></i> ' . _e('مخالفات أطراف العقد') . '</h5>';
         foreach ($partyWarnings as $pw) {
             echo '<div class="party-item">';
             echo '<i class="fa fa-exclamation-triangle"></i> ';
-            echo _e('Party') . ' <b>' . htmlspecialchars($pw['party_name'], ENT_QUOTES, 'UTF-8') . '</b>';
+            echo _e('طرف') . ' <b>' . htmlspecialchars($pw['party_name'], ENT_QUOTES, 'UTF-8') . '</b>';
             if (!empty($pw['party_nid'])) {
                 echo ' (' . htmlspecialchars($pw['party_nid'], ENT_QUOTES, 'UTF-8') . ')';
             }
-            echo ' - ' . _e('active with') . ' <b>' . htmlspecialchars($pw['found_account'], ENT_QUOTES, 'UTF-8') . '</b>';
-            echo ' - ' . _e('remaining amount exceeds') . ' 150';
-            echo ' &rarr; <span class="label label-danger">' . htmlspecialchars($pw['violating_account'], ENT_QUOTES, 'UTF-8') . ' ' . _e('is violating') . '</span>';
+            echo ' - ' . _e('نشط مع') . ' <b>' . htmlspecialchars($pw['found_account'], ENT_QUOTES, 'UTF-8') . '</b>';
+            echo ' - ' . _e('المبلغ المتبقي يتجاوز') . ' 150';
+            echo ' &rarr; <span class="label label-danger">' . htmlspecialchars($pw['violating_account'], ENT_QUOTES, 'UTF-8') . ' ' . _e('مخالف') . '</span>';
             echo '</div>';
         }
         echo '</div>';
@@ -858,8 +869,25 @@ if (!empty($_GET['search'])) {
         echo '<div class="group-banner ' . $bannerClass . '">';
         echo '<div class="banner-icon">' . $recIcon . '</div>';
         echo '<div class="banner-text">' . htmlspecialchars($group['message'], ENT_QUOTES, 'UTF-8') . '</div>';
-        if ($rec === 'contact_first' && !empty($group['first_phone'])) {
-            echo '<span class="banner-phone"><i class="fa fa-phone"></i> ' . htmlspecialchars($group['first_phone'], ENT_QUOTES, 'UTF-8') . '</span>';
+
+        $bannerPhones = [];
+        foreach ($group['results'] as $_ent) {
+            $accName = resolveAccountName($_ent);
+            $accPhone = getAccountPhone($_ent);
+            if (!empty($accPhone) && !isset($bannerPhones[$accName])) {
+                $bannerPhones[$accName] = $accPhone;
+            }
+        }
+        if (!empty($bannerPhones)) {
+            echo '<div class="banner-phones" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">';
+            foreach ($bannerPhones as $accLabel => $accPh) {
+                $phSafe = htmlspecialchars($accPh, ENT_QUOTES, 'UTF-8');
+                $lblSafe = htmlspecialchars($accLabel, ENT_QUOTES, 'UTF-8');
+                $telLink = 'tel:' . preg_replace('/[^\d+]/', '', $accPh);
+                echo '<a href="' . $telLink . '" class="banner-phone" style="text-decoration:none;">'
+                   . '<i class="fa fa-phone"></i> ' . $lblSafe . ': ' . $phSafe . '</a>';
+            }
+            echo '</div>';
         }
         echo '</div>';
 
@@ -867,12 +895,12 @@ if (!empty($_GET['search'])) {
 
         $count = 0;
         foreach ($group['results'] as $key) {
-            $key = array_merge([
+        $key = array_merge([
                 'account' => '', 'id' => '', 'sell_date' => '', 'name' => '',
                 'national_id' => '', 'work' => '', 'phone' => '', 'status' => '',
                 'court_status' => '', 'attachments' => 0, 'cid' => 0, '_source' => 'local',
                 'created_on' => '', 'remaining_amount' => null,
-            ], $key);
+        ], $key);
 
             $count++;
             $account_name = resolveAccountName($key);
@@ -884,31 +912,31 @@ if (!empty($_GET['search'])) {
             elseif ($source === 'namaa' || $account_name === 'نماء') $badgeClass = 'namaa';
             elseif ($source === 'bseel' || $account_name === 'بسيل' || $account_name === 'عمار') { $badgeClass = 'bseel'; $account_name = 'بسيل'; }
 
-            $account_id = 0;
-            $people_link = '';
+        $account_id = 0;
+        $people_link = '';
             $relations_link = '';
-            $attachments_link = '';
+        $attachments_link = '';
 
             if ($account_name === 'زجل' || $source === 'zajal') {
-                $account_id = 1;
-                $attachments_link = $key['attachments'];
-                $people_link = 'https://zajal.cc/people-api.php?token=354afdf5357c&client=' . $key['id'];
-                $relations_link = 'https://zajal.cc/fahras-parties-api.php?token=354afdf5357c&contract=' . $key['id'];
+            $account_id = 1;
+            $attachments_link = $key['attachments'];
+            $people_link = 'https://zajal.cc/people-api.php?token=354afdf5357c&client=' . $key['id'];
+            $relations_link = 'https://zajal.cc/fahras-parties-api.php?token=354afdf5357c&contract=' . $key['id'];
             } elseif ($account_name === 'جدل' || $source === 'jadal') {
-                $attachments_link = 'https://jadal.aqssat.co/fahras/client-attachments.php?db=jadal&id=' . $key['cid'];
-                $people_link = 'https://jadal.aqssat.co/fahras/people.php?token=b83ba7a49b72&db=jadal&client=' . $key['cid'];
-                $relations_link = 'https://jadal.aqssat.co/fahras/relations.php?token=b83ba7a49b72&db=jadal&client=' . $key['cid'];
+            $attachments_link = 'https://jadal.aqssat.co/fahras/client-attachments.php?db=jadal&id=' . $key['cid'];
+            $people_link = 'https://jadal.aqssat.co/fahras/people.php?token=b83ba7a49b72&db=jadal&client=' . $key['cid'];
+            $relations_link = 'https://jadal.aqssat.co/fahras/relations.php?token=b83ba7a49b72&db=jadal&client=' . $key['cid'];
             } elseif ($account_name === 'نماء' || $source === 'namaa') {
-                $attachments_link = 'https://jadal.aqssat.co/fahras/client-attachments.php?db=namaa&id=' . $key['cid'];
-                $people_link = 'https://jadal.aqssat.co/fahras/people.php?token=b83ba7a49b72&db=erp&client=' . $key['cid'];
-                $relations_link = 'https://jadal.aqssat.co/fahras/relations.php?token=b83ba7a49b72&db=erp&client=' . $key['cid'];
+            $attachments_link = 'https://jadal.aqssat.co/fahras/client-attachments.php?db=namaa&id=' . $key['cid'];
+            $people_link = 'https://jadal.aqssat.co/fahras/people.php?token=b83ba7a49b72&db=erp&client=' . $key['cid'];
+            $relations_link = 'https://jadal.aqssat.co/fahras/relations.php?token=b83ba7a49b72&db=erp&client=' . $key['cid'];
             } elseif ($account_name === 'عمار' || $account_name === 'بسيل' || $source === 'bseel') {
                 $people_link = 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=people&client=' . $key['id'];
                 $attachments_link = 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=attachments&client=' . $key['id'];
                 $relations_link = 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=parties&contract=' . $key['id'];
-            } else {
-                $attachments_link = '/admin/attachments?client=' . $key['id'];
-            }
+        } else {
+            $attachments_link = '/admin/attachments?client=' . $key['id'];
+        }
 
             $raw_ids = trim((string)$key['id']);
             if ($raw_ids === '' || $raw_ids === '0') $raw_ids = '-';
@@ -917,13 +945,14 @@ if (!empty($_GET['search'])) {
             foreach ($ids as $id) {
                 if (!empty($relations_link)) {
                     $link = $relations_link . '&contract=' . urlencode($id);
-                    $contractItems[] = '<a class="contract-id-link" onclick="showPeople(this, \'' . _e('Contract Parties') . '\');" account-link="' . htmlspecialchars($link, ENT_QUOTES, 'UTF-8') . '">#' . htmlspecialchars($id, ENT_QUOTES, 'UTF-8') . '</a>';
+                    $contractItems[] = '<a class="contract-id-link" onclick="showPeople(this, \'' . _e('أطراف العقد') . '\');" account-link="' . htmlspecialchars($link, ENT_QUOTES, 'UTF-8') . '">#' . htmlspecialchars($id, ENT_QUOTES, 'UTF-8') . '</a>';
                 } else {
                     $contractItems[] = '#' . htmlspecialchars($id, ENT_QUOTES, 'UTF-8');
                 }
             }
 
             $displayDate = !empty($key['created_on']) ? $key['created_on'] : ($key['sell_date'] ?? '');
+            $displayDate = formatTo12h($displayDate);
 
             echo '<div class="contract-entry">';
             echo '<div class="contract-num">' . $count . '</div>';
@@ -939,22 +968,22 @@ if (!empty($_GET['search'])) {
 
             echo '<div class="contract-details">';
             if (!empty($key['national_id'])) {
-                echo '<div class="contract-detail">' . _e('National ID') . ': <span>' . htmlspecialchars((string)$key['national_id'], ENT_QUOTES, 'UTF-8') . '</span></div>';
+                echo '<div class="contract-detail">' . _e('الرقم الوطني') . ': <span>' . htmlspecialchars((string)$key['national_id'], ENT_QUOTES, 'UTF-8') . '</span></div>';
             }
             if (!empty($displayDate)) {
-                echo '<div class="contract-detail">' . _e('Contract Date') . ': <span>' . htmlspecialchars((string)$displayDate, ENT_QUOTES, 'UTF-8') . '</span></div>';
+                echo '<div class="contract-detail">' . _e('تاريخ العقد') . ': <span>' . htmlspecialchars((string)$displayDate, ENT_QUOTES, 'UTF-8') . '</span></div>';
             }
             if (!empty($key['phone'])) {
-                echo '<div class="contract-detail">' . _e('Phone') . ': <span dir="ltr">' . htmlspecialchars((string)$key['phone'], ENT_QUOTES, 'UTF-8') . '</span></div>';
+                echo '<div class="contract-detail">' . _e('الهاتف') . ': <span dir="ltr">' . htmlspecialchars((string)$key['phone'], ENT_QUOTES, 'UTF-8') . '</span></div>';
             }
             if (!empty($key['work'])) {
-                echo '<div class="contract-detail">' . _e('Work') . ': <span>' . htmlspecialchars((string)$key['work'], ENT_QUOTES, 'UTF-8') . '</span></div>';
+                echo '<div class="contract-detail">' . _e('جهة العمل') . ': <span>' . htmlspecialchars((string)$key['work'], ENT_QUOTES, 'UTF-8') . '</span></div>';
             }
             if (!empty($key['status'])) {
-                echo '<div class="contract-detail">' . _e('Status') . ': <span>' . htmlspecialchars((string)$key['status'], ENT_QUOTES, 'UTF-8') . '</span></div>';
+                echo '<div class="contract-detail">' . _e('الحالة') . ': <span>' . htmlspecialchars((string)$key['status'], ENT_QUOTES, 'UTF-8') . '</span></div>';
             }
             if (!empty($key['court_status'])) {
-                echo '<div class="contract-detail">' . _e('Court Status') . ': <span>' . htmlspecialchars((string)$key['court_status'], ENT_QUOTES, 'UTF-8') . '</span></div>';
+                echo '<div class="contract-detail">' . _e('حالة المحكمة') . ': <span>' . htmlspecialchars((string)$key['court_status'], ENT_QUOTES, 'UTF-8') . '</span></div>';
             }
             echo '</div>';
 
@@ -962,10 +991,10 @@ if (!empty($_GET['search'])) {
 
             echo '<div class="contract-actions">';
             if (!empty($attachments_link) && !empty($key['attachments']) && $key['attachments'] != '0' && user_can('clients', 'view_attachments')) {
-                echo '<div class="btn-icon" onclick="showAttachments(this,' . (int)$account_id . ');" account-link="' . htmlspecialchars($attachments_link, ENT_QUOTES, 'UTF-8') . '" title="' . _e('Attachments') . '"><i class="fa fa-images"></i></div>';
+                echo '<div class="btn-icon" onclick="showAttachments(this,' . (int)$account_id . ');" account-link="' . htmlspecialchars($attachments_link, ENT_QUOTES, 'UTF-8') . '" title="' . _e('المرفقات') . '"><i class="fa fa-images"></i></div>';
             }
             if (!empty($people_link)) {
-                echo '<div class="btn-icon" onclick="showPeople(this);" account-link="' . htmlspecialchars($people_link, ENT_QUOTES, 'UTF-8') . '" title="' . _e('References') . '"><i class="fa fa-users"></i></div>';
+                echo '<div class="btn-icon" onclick="showPeople(this);" account-link="' . htmlspecialchars($people_link, ENT_QUOTES, 'UTF-8') . '" title="' . _e('المراجع') . '"><i class="fa fa-users"></i></div>';
             }
             echo '</div>';
 
@@ -984,28 +1013,28 @@ if (!empty($_GET['search'])) {
         <div id="results-area">
             <div class="search-loading" id="search-loading">
                 <i class="fa fa-circle-notch"></i>
-                <p><?= _e('Searching...') ?></p>
+                <p><?= _e('جاري البحث...') ?></p>
             </div>
         </div>
 
         <div class="fahras-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('Made with') ?> <i class="fa fa-heart"></i> <?= _e('by MÜJEER') ?></a>
+            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('صُنع بـ') ?> <i class="fa fa-heart"></i> <?= _e('بواسطة MÜJEER') ?></a>
             &nbsp;&middot;&nbsp;
-            &copy; <?= _e('Fahras') ?> <?= date('Y') ?>
+            &copy; <?= _e('فهرس') ?> <?= date('Y') ?>
         </div>
     </div>
-</div>
+    </div>
 
 <div class="modal fade" id="attachments-modal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                <h4 class="modal-title"><?= _e('Attachments') ?></h4>
+                <h4 class="modal-title"><?= _e('المرفقات') ?></h4>
+                </div>
+                <div class="modal-body"></div>
             </div>
-            <div class="modal-body"></div>
         </div>
-    </div>
 </div>
 
 <?php include 'footer.php'; ?>
@@ -1014,8 +1043,8 @@ if (!empty($_GET['search'])) {
 <script>
 function showAttachments(obj, account) {
     var modal = $('#attachments-modal');
-    modal.find('.modal-title').html('<?= _e('Attachments') ?>');
-    modal.find('.modal-body').html('<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.5)"><i class="fa fa-circle-notch fa-spin fa-2x"></i><br><small style="margin-top:10px;display:block"><?= _e('Please Wait') ?></small></div>');
+    modal.find('.modal-title').html('<?= _e('المرفقات') ?>');
+    modal.find('.modal-body').html('<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.5)"><i class="fa fa-circle-notch fa-spin fa-2x"></i><br><small style="margin-top:10px;display:block"><?= _e('يرجى الانتظار') ?></small></div>');
     if (account == 1) {
         modal.find('.modal-body').html('<img src="https://zajal.cc/uploads/' + $(obj).attr('account-link') + '" style="max-width:100%;border-radius:10px;" />');
         modal.modal('show');
@@ -1028,10 +1057,10 @@ function showAttachments(obj, account) {
 }
 
 function showPeople(obj, title) {
-    title = title || '<?= _e('References') ?>';
+    title = title || '<?= _e('المراجع') ?>';
     var modal = $('#attachments-modal');
     modal.find('.modal-title').html(title);
-    modal.find('.modal-body').html('<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.5)"><i class="fa fa-circle-notch fa-spin fa-2x"></i><br><small style="margin-top:10px;display:block"><?= _e('Please Wait') ?></small></div>');
+    modal.find('.modal-body').html('<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.5)"><i class="fa fa-circle-notch fa-spin fa-2x"></i><br><small style="margin-top:10px;display:block"><?= _e('يرجى الانتظار') ?></small></div>');
     modal.modal('show');
     $.get($(obj).attr('account-link'), function(result) {
         modal.find('.modal-body').html(result);
@@ -1125,7 +1154,7 @@ function showPeople(obj, title) {
         input.value = q;
         if (q) {
             form.dispatchEvent(new Event('submit'));
-        } else {
+    } else {
             var c = document.getElementById('results-content');
             if (c) c.remove();
             var t = document.querySelector('.results-toolbar');
@@ -1149,7 +1178,8 @@ function captureResults(){
 
     var now=new Date();
     var ds=now.getFullYear()+'-'+_rPad(now.getMonth()+1)+'-'+_rPad(now.getDate());
-    var ts=_rPad(now.getHours())+':'+_rPad(now.getMinutes())+':'+_rPad(now.getSeconds());
+    var _h=now.getHours(),_ap=_h>=12?'PM':'AM';_h=_h%12||12;
+    var ts=_rPad(_h)+':'+_rPad(now.getMinutes())+' '+_ap;
 
     var sn={local:'محلي',zajal:'زجل',jadal:'جدل',namaa:'نماء',bseel:'بسيل'};
     var remoteSrc=['zajal','jadal','namaa','bseel'];

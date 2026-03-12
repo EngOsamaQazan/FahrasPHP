@@ -1,5 +1,5 @@
 <?php
-	$page_title = 'Users';
+	$page_title = 'المستخدمين';
 	$token = 'mojeer';
 
 	require_once __DIR__ . '/../includes/bootstrap.php';
@@ -102,13 +102,15 @@
 
 	include 'header.php';
 
-	// Build dynamic role options from DB
-	$roleStmt = $db->prepare("SELECT id, name, display_name_ar, display_name_en FROM roles ORDER BY id");
+	// Build dynamic role options from DB (exclude 'admin' role)
+	$roleStmt = $db->prepare("SELECT id, name, display_name_ar, display_name_en FROM roles WHERE name != 'admin' ORDER BY id");
 	$roleStmt->execute();
 	$roleOptions = [];
+	$superAdminRoleId = 0;
 	while ($r = $roleStmt->fetch(PDO::FETCH_ASSOC)) {
 		$label = ($lang === 'ar') ? ($r['display_name_ar'] ?: $r['name']) : ($r['display_name_en'] ?: $r['name']);
 		$roleOptions[$r['id']] = $label;
+		if ($r['name'] === 'super_admin') $superAdminRoleId = (int)$r['id'];
 	}
 
 	$moduleLabels = [
@@ -117,7 +119,7 @@
 		'import'       => ['ar' => 'الاستيراد',      'en' => 'Import',       'icon' => 'fa-upload'],
 		'jobs'         => ['ar' => 'الوظائف',        'en' => 'Jobs',         'icon' => 'fa-briefcase'],
 		'violations'   => ['ar' => 'المخالفات',      'en' => 'Violations',   'icon' => 'fa-exclamation-triangle'],
-		'accounts'     => ['ar' => 'الحسابات',       'en' => 'Accounts',     'icon' => 'fa-building'],
+		'accounts'     => ['ar' => 'الشركات',       'en' => 'Companies',     'icon' => 'fa-building'],
 		'users'        => ['ar' => 'المستخدمين',     'en' => 'Users',        'icon' => 'fa-user-cog'],
 		'roles'        => ['ar' => 'الأدوار',        'en' => 'Roles',        'icon' => 'fa-shield-alt'],
 		'scan'         => ['ar' => 'الجرد',          'en' => 'Scan',         'icon' => 'fa-radar'],
@@ -290,7 +292,7 @@
     <div class="container">
         <div class="xcrud-page-header">
             <h1><i class="fad fa-key"></i> <?=_e($page_title)?></h1>
-            <p><?=_e('Manage system users and permissions')?></p>
+            <p><?=_e('إدارة مستخدمي النظام والصلاحيات')?></p>
         </div>
 
 	<?php
@@ -302,26 +304,26 @@
 		$xcrud->order_by('id','desc');
 		$xcrud->language($user['language']);
 
-		$xcrud->change_type('password', 'password', 'md5', array('placeholder'=>_e('Please enter new password')));
+		$xcrud->change_type('password', 'password', 'md5', array('placeholder'=>_e('أدخل كلمة المرور الجديدة')));
 
 		$xcrud->label(array(
-			'name' => _e('Full Name'),
-			'role_id' => _e('Role'),
-			'account' => _e('Account'),
-			'language' => _e('Language'),
-			'username' => _e('Username'),
-			'token' => _e('Token'),
-			'password' => _e('Password'),
-			'last_login' => _e('Last Login'),
-			'created_on' => _e('Created On'),
-			'active' => _e('Active?'),
+			'name' => _e('الاسم الكامل'),
+			'role_id' => _e('الصلاحية'),
+			'account' => _e('الشركة'),
+			'language' => _e('اللغة'),
+			'username' => _e('اسم المستخدم'),
+			'token' => _e('الرمز'),
+			'password' => _e('كلمة المرور'),
+			'last_login' => _e('آخر دخول'),
+			'created_on' => _e('تاريخ الإنشاء'),
+			'active' => _e('نشط؟'),
 		));
 
 		$xcrud->change_type('role_id', 'select', '', $roleOptions);
 
 		$xcrud->change_type('language', 'select', '', array(
-			'en'=>_e('English'),
-			'ar'=>_e('Arabic'),
+			'en'=>_e('الإنجليزية'),
+			'ar'=>_e('العربية'),
 		));
 
 		$xcrud->pass_var('created_on', date('Y-m-d H:i:s'));
@@ -340,7 +342,7 @@
 		if (!user_can('users', 'edit'))   $xcrud->unset_edit();
 		if (!user_can('users', 'delete')) $xcrud->unset_remove();
 
-		$permBtnLabel = $lang === 'ar' ? 'صلاحيات' : 'Perms';
+		$permBtnLabel = _e('صلاحيات');
 		$xcrud->button('#', $permBtnLabel, 'fal fa-user-shield', 'xcrud-action btn-perms', [
 			'data-uid' => '{id}',
 			'onclick' => 'event.preventDefault();upOpen({id})',
@@ -351,9 +353,9 @@
 	?>
 
         <div class="xcrud-page-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('Made with')?> <i class="fa fa-heart"></i> <?=_e('by MÜJEER')?></a>
+            <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('صُنع بـ')?> <i class="fa fa-heart"></i> <?=_e('بواسطة MÜJEER')?></a>
             &nbsp;&middot;&nbsp;
-            &copy; <?=_e('Fahras')?> <?=date('Y')?>
+            &copy; <?=_e('فهرس')?> <?=date('Y')?>
         </div>
     </div>
 </div>
@@ -362,7 +364,7 @@
 <div class="up-overlay" id="upOverlay">
     <div class="up-modal">
         <div class="up-header">
-            <h2><i class="fal fa-user-shield"></i> <span id="upTitle"><?=_e('User Permissions')?></span></h2>
+            <h2><i class="fal fa-user-shield"></i> <span id="upTitle"><?=_e('صلاحيات المستخدم')?></span></h2>
             <div>
                 <span class="up-user-badge" id="upRoleBadge"></span>
             </div>
@@ -540,6 +542,37 @@ document.addEventListener('keydown', function(e) {
 });
 
 upInit();
+
+var SUPER_ADMIN_ROLE_ID = '<?= $superAdminRoleId ?>';
 </script>
 
 <?php include 'footer.php'; ?>
+
+<script>
+(function(){
+    var ROLE_NAME = '<?= str_replace(["=","/","+"], ["-","_",":"], base64_encode("users.role_id")) ?>';
+    var ACCT_NAME = '<?= str_replace(["=","/","+"], ["-","_",":"], base64_encode("users.account")) ?>';
+
+    function doToggle() {
+        var rs = document.querySelector('select[name="' + ROLE_NAME + '"]');
+        var as = document.querySelector('select[name="' + ACCT_NAME + '"]');
+        if (!rs || !as) return;
+        var grp = jQuery(as).closest('.form-group');
+        if (!grp.length) return;
+        if (rs.value == SUPER_ADMIN_ROLE_ID) {
+            grp.slideUp(200);
+        } else {
+            grp.slideDown(200);
+        }
+    }
+
+    jQuery(document).on('xcrudafterrequest', function() {
+        setTimeout(function(){
+            doToggle();
+            var rs = jQuery('select[name="' + ROLE_NAME + '"]');
+            rs.off('change.acctToggle select2:select.acctToggle');
+            rs.on('change.acctToggle select2:select.acctToggle', doToggle);
+        }, 500);
+    });
+})();
+</script>

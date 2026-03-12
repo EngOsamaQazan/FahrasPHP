@@ -1,6 +1,6 @@
 <?php
 $token = 'mojeer';
-$page_title = 'Scan';
+$page_title = 'الجرد';
 include 'header.php';
 
 require_once __DIR__ . '/../includes/violation_engine.php';
@@ -13,10 +13,10 @@ try {
     $totalActive  = $db->get_count('violations', ['status' => 'active']) ?: 0;
     $syncStmt = $db->run("SELECT MAX(synced_at) as last_sync FROM remote_clients");
     $lastSyncRow = is_object($syncStmt) ? $syncStmt->fetch() : [];
-    $lastSync = $lastSyncRow['last_sync'] ?? _e('Never');
+    $lastSync = $lastSyncRow['last_sync'] ?? _e('لم يتم بعد');
 } catch (Exception $e) {
     $totalClients = $totalRemote = $totalActive = 0;
-    $lastSync = _e('Never');
+    $lastSync = _e('لم يتم بعد');
 }
 ?>
 
@@ -208,44 +208,44 @@ try {
 <div class="scan-page">
     <div class="container">
         <div class="scan-header">
-            <h1><i class="fa fa-radar"></i> <?= _e('Scan & Sync') ?></h1>
-            <p><?= _e('Synchronize data and detect violations') ?></p>
+            <h1><i class="fa fa-radar"></i> <?= _e('الفحص والمزامنة') ?></h1>
+            <p><?= _e('مزامنة البيانات واكتشاف المخالفات') ?></p>
         </div>
 
         <div class="scan-stats-grid" id="stats-row">
             <div class="scan-stat-card">
                 <h2 id="stat-clients"><?= number_format($totalClients) ?></h2>
-                <p><?= _e('Local Clients') ?></p>
+                <p><?= _e('العملاء المحليين') ?></p>
             </div>
             <div class="scan-stat-card">
                 <h2 id="stat-remote"><?= number_format($totalRemote) ?></h2>
-                <p><?= _e('Cached Remote Records') ?></p>
+                <p><?= _e('السجلات الخارجية المخزنة') ?></p>
             </div>
             <div class="scan-stat-card danger">
                 <h2 id="stat-violations"><?= $totalActive ?></h2>
-                <p><?= _e('Active Violations') ?></p>
+                <p><?= _e('المخالفات النشطة') ?></p>
             </div>
             <div class="scan-stat-card">
                 <h4 id="stat-sync"><?= htmlspecialchars($lastSync) ?></h4>
-                <p><?= _e('Last Sync') ?></p>
+                <p><?= _e('آخر مزامنة') ?></p>
             </div>
         </div>
 
         <div class="scan-actions" id="action-buttons">
             <button class="btn-scan-action btn-scan-green" onclick="runFullScan()">
-                <i class="fa fa-check-double"></i> <?= _e('Start Combined Scan') ?>
+                <i class="fa fa-check-double"></i> <?= _e('بدء الفحص المجمع') ?>
             </button>
             <button class="btn-scan-action btn-scan-amber" onclick="runSyncOnly()">
-                <i class="fa fa-sync"></i> <?= _e('Sync APIs Only') ?>
+                <i class="fa fa-sync"></i> <?= _e('مزامنة APIs فقط') ?>
             </button>
             <button class="btn-scan-action btn-scan-blue" onclick="runScanOnly()">
-                <i class="fa fa-search"></i> <?= _e('Scan Violations Only') ?>
+                <i class="fa fa-search"></i> <?= _e('فحص المخالفات فقط') ?>
             </button>
         </div>
 
         <div class="progress-section" id="progress-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                <b id="progress-title" style="color:#e0e6ed;"><i class="fa fa-cog fa-spin"></i> <?= _e('Processing') ?>...</b>
+                <b id="progress-title" style="color:#e0e6ed;"><i class="fa fa-cog fa-spin"></i> <?= _e('جاري المعالجة') ?>...</b>
                 <span id="progress-percent" style="font-weight: bold; color: #63b3ed;">0%</span>
             </div>
             <div class="progress">
@@ -263,9 +263,9 @@ try {
         <div id="violations-table" style="display:none;max-width:900px;margin:0 auto;"></div>
 
         <div class="scan-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('Made with') ?> <i class="fa fa-heart"></i> <?= _e('by MÜJEER') ?></a>
+            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('صُنع بـ') ?> <i class="fa fa-heart"></i> <?= _e('بواسطة MÜJEER') ?></a>
             &nbsp;&middot;&nbsp;
-            &copy; <?= _e('Fahras') ?> <?= date('Y') ?>
+            &copy; <?= _e('فهرس') ?> <?= date('Y') ?>
         </div>
     </div>
 </div>
@@ -274,48 +274,48 @@ try {
 const CSRF = '<?= csrf_token() ?>';
 const LABELS = {
     zajal: 'زجل', jadal: 'جدل', namaa: 'نماء', bseel: 'بسيل',
-    syncing: '<?= _e('Syncing') ?>',
-    scanning: '<?= _e('Scanning') ?>',
-    done: '<?= _e('Completed') ?>',
-    failed: '<?= _e('Failed') ?>',
+    syncing: '<?= _e('جاري المزامنة') ?>',
+    scanning: '<?= _e('جاري الفحص') ?>',
+    done: '<?= _e('اكتمل') ?>',
+    failed: '<?= _e('فشل') ?>',
     newRecords: '<?= _e('new records synced') ?>',
     updated: '<?= _e('updated') ?>',
     errors: '<?= _e('errors') ?>',
-    violations: '<?= _e('Violations') ?>',
+    violations: '<?= _e('المخالفات') ?>',
     newViolations: '<?= _e('new violations detected') ?>',
     checked: '<?= _e('pairs checked') ?>',
     seconds: '<?= _e('seconds') ?>',
-    scanLocal: '<?= _e('Local vs Local Scan') ?>',
-    scanRemote: '<?= _e('Local vs External Scan') ?>',
-    scanExternal: '<?= _e('External vs External Scan') ?>',
-    combinedDone: '<?= _e('Combined scan completed') ?>',
-    bulkSync: '<?= _e('Bulk sync') ?>',
-    syncDone: '<?= _e('Sync completed') ?>',
-    scanDone: '<?= _e('Scan completed') ?>',
-    totalSynced: '<?= _e('Total synced') ?>',
-    totalViolations: '<?= _e('Total violations found') ?>',
-    totalTime: '<?= _e('Total time') ?>',
-    connectionFailed: '<?= _e('Connection failed') ?>',
-    latestViolations: '<?= _e('Latest detected violations') ?>',
-    client: '<?= _e('Client') ?>',
-    nationalId: '<?= _e('National ID') ?>',
-    entitledCompany: '<?= _e('Entitled Company') ?>',
-    entitledDate: '<?= _e('Entitled Contract Date') ?>',
-    violatingCompany: '<?= _e('Violating Company') ?>',
-    violatingDate: '<?= _e('Violation Date') ?>',
-    fine: '<?= _e('Fine') ?>',
-    status: '<?= _e('Status') ?>',
-    active: '<?= _e('Active') ?>',
-    exempted: '<?= _e('Exempted') ?>',
-    resolved: '<?= _e('Resolved') ?>',
-    noViolations: '<?= _e('No violations found in the database.') ?>',
+    scanLocal: '<?= _e('فحص محلي مقابل محلي') ?>',
+    scanRemote: '<?= _e('فحص محلي مقابل خارجي') ?>',
+    scanExternal: '<?= _e('فحص خارجي مقابل خارجي') ?>',
+    combinedDone: '<?= _e('اكتمل الفحص المجمع') ?>',
+    bulkSync: '<?= _e('مزامنة مجمعة') ?>',
+    syncDone: '<?= _e('اكتملت المزامنة') ?>',
+    scanDone: '<?= _e('اكتمل الفحص') ?>',
+    totalSynced: '<?= _e('إجمالي المزامنة') ?>',
+    totalViolations: '<?= _e('إجمالي المخالفات المكتشفة') ?>',
+    totalTime: '<?= _e('الوقت الإجمالي') ?>',
+    connectionFailed: '<?= _e('فشل الاتصال') ?>',
+    latestViolations: '<?= _e('آخر المخالفات المكتشفة') ?>',
+    client: '<?= _e('العميل') ?>',
+    nationalId: '<?= _e('الرقم الوطني') ?>',
+    entitledCompany: '<?= _e('الشركة المستحقة') ?>',
+    entitledDate: '<?= _e('تاريخ عقد المستحق') ?>',
+    violatingCompany: '<?= _e('الشركة المخالفة') ?>',
+    violatingDate: '<?= _e('تاريخ المخالفة') ?>',
+    fine: '<?= _e('الغرامة') ?>',
+    status: '<?= _e('الحالة') ?>',
+    active: '<?= _e('نشطة') ?>',
+    exempted: '<?= _e('معفاة') ?>',
+    resolved: '<?= _e('تم الحل') ?>',
+    noViolations: '<?= _e('لم يتم العثور على مخالفات في قاعدة البيانات.') ?>',
 };
 
 let isRunning = false;
 const consoleEl = document.getElementById('scan-console');
 
 function logTime() {
-    return new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    return new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
 }
 
 function log(msg, type = 'info') {
@@ -520,6 +520,19 @@ async function scanExternal(stepIdx, totalSteps) {
     }
 }
 
+function to12h(dateStr) {
+    if (!dateStr) return '';
+    try {
+        var d = new Date(dateStr.replace(' ', 'T'));
+        if (isNaN(d.getTime())) return dateStr;
+        var y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+        var h = d.getHours(), ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        var min = String(d.getMinutes()).padStart(2,'0');
+        return y+'-'+m+'-'+day+' '+String(h).padStart(2,'0')+':'+min+' '+ampm;
+    } catch(e) { return dateStr; }
+}
+
 async function showViolationsTable() {
     try {
         const r = await ajax('recent_violations');
@@ -533,7 +546,7 @@ async function showViolationsTable() {
                 else if (sLabel === 'exempted_below_150') { badge = 'info'; sLabel = LABELS.exempted; }
                 else if (sLabel === 'resolved') { badge = 'success'; sLabel = LABELS.resolved; }
                 const partyBadge = (v.party_type && v.party_type !== 'عميل') ? `<span class="label label-warning">${v.party_type}</span>` : (v.party_type || 'عميل');
-                html += `<tr><td>${v.id}</td><td>${v.client_name||''}</td><td>${v.national_id||''}</td><td>${partyBadge}</td><td>${v.entitled_account||''}</td><td>${v.entitled_sell_date||''}</td><td>${v.violating_account||''}</td><td>${v.violating_sell_date||''}</td><td>${parseFloat(v.fine_amount||0).toFixed(2)}</td><td><span class="label label-${badge}">${sLabel}</span></td></tr>`;
+                html += `<tr><td>${v.id}</td><td>${v.client_name||''}</td><td>${v.national_id||''}</td><td>${partyBadge}</td><td>${v.entitled_account||''}</td><td>${to12h(v.entitled_sell_date)}</td><td>${v.violating_account||''}</td><td>${to12h(v.violating_sell_date)}</td><td>${parseFloat(v.fine_amount||0).toFixed(2)}</td><td><span class="label label-${badge}">${sLabel}</span></td></tr>`;
             });
             html += '</tbody></table></div></div>';
             document.getElementById('violations-table').innerHTML = html;

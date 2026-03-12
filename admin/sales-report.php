@@ -1,6 +1,6 @@
 <?php
 $token = 'mojeer';
-$page_title = 'Sales Report';
+$page_title = 'تقرير المبيعات';
 include 'header.php';
 
 require_permission('sales_report', 'view');
@@ -87,7 +87,7 @@ $companyCount = count($localData) + count($remoteData);
 
 $isToday = ($dateFrom === $today && $dateTo === $today);
 $periodLabel = $isToday
-    ? _e('Today') . ' (' . $today . ')'
+    ? _e('اليوم') . ' (' . $today . ')'
     : $dateFrom . ' — ' . $dateTo;
 ?>
 
@@ -337,31 +337,31 @@ $periodLabel = $isToday
 <div class="sales-page">
     <div class="container">
         <div class="sales-header">
-            <h1><i class="fa fa-chart-line"></i> <?= _e('Sales Report') ?></h1>
-            <p><?= _e('Sales overview by company for a specific period') ?> — <?= $periodLabel ?></p>
+            <h1><i class="fa fa-chart-line"></i> <?= _e('تقرير المبيعات') ?></h1>
+            <p><?= _e('نظرة عامة على المبيعات حسب الشركة لفترة محددة') ?> — <?= $periodLabel ?></p>
         </div>
 
         <form method="get" class="sales-filter">
-            <label><?= _e('From') ?></label>
+            <label><?= _e('من') ?></label>
             <input type="date" name="from" value="<?= htmlspecialchars($dateFrom) ?>">
-            <label><?= _e('To') ?></label>
+            <label><?= _e('إلى') ?></label>
             <input type="date" name="to" value="<?= htmlspecialchars($dateTo) ?>">
-            <button type="submit" class="btn-view"><i class="fa fa-search"></i> <?= _e('View') ?></button>
-            <a href="sales-report" class="btn-today"><i class="fa fa-calendar-day"></i> <?= _e('Today') ?></a>
+            <button type="submit" class="btn-view"><i class="fa fa-search"></i> <?= _e('عرض') ?></button>
+            <a href="sales-report" class="btn-today"><i class="fa fa-calendar-day"></i> <?= _e('اليوم') ?></a>
         </form>
 
         <div class="stats-row">
             <div class="stat-card primary">
                 <div class="stat-value"><?= $grandTotalClients ?></div>
-                <div class="stat-label"><?= _e('Total Clients Sold') ?></div>
+                <div class="stat-label"><?= _e('إجمالي العملاء المباعين') ?></div>
             </div>
             <div class="stat-card success">
                 <div class="stat-value"><?= number_format($grandTotalAmount, 0) ?></div>
-                <div class="stat-label"><?= _e('Total Amount') ?> (<?= _e('JOD') ?>)</div>
+                <div class="stat-label"><?= _e('المبلغ الإجمالي') ?> (<?= _e('دينار') ?>)</div>
             </div>
             <div class="stat-card warning">
                 <div class="stat-value"><?= $companyCount ?></div>
-                <div class="stat-label"><?= _e('Active Companies') ?></div>
+                <div class="stat-label"><?= _e('الشركات النشطة') ?></div>
             </div>
         </div>
 
@@ -371,16 +371,16 @@ $periodLabel = $isToday
             <div class="company-card" onclick="filterTable('local', '<?= htmlspecialchars($row['company_name'], ENT_QUOTES) ?>')">
                 <div class="cc-header">
                     <span class="cc-name"><?= htmlspecialchars($row['company_name']) ?></span>
-                    <span class="cc-badge local"><?= _e('Local') ?></span>
+                    <span class="cc-badge local"><?= _e('محلي') ?></span>
                 </div>
                 <div class="cc-stats">
                     <div class="cc-stat">
                         <div class="cc-stat-val"><?= $row['total_clients'] ?></div>
-                        <div class="cc-stat-lbl"><?= _e('Clients') ?></div>
+                        <div class="cc-stat-lbl"><?= _e('العملاء') ?></div>
                     </div>
                     <div class="cc-stat">
                         <div class="cc-stat-val"><?= number_format($row['total_amount'], 0) ?></div>
-                        <div class="cc-stat-lbl"><?= _e('Amount') ?></div>
+                        <div class="cc-stat-lbl"><?= _e('المبلغ') ?></div>
                     </div>
                 </div>
             </div>
@@ -397,11 +397,11 @@ $periodLabel = $isToday
                 <div class="cc-stats">
                     <div class="cc-stat">
                         <div class="cc-stat-val"><?= $row['total_clients'] ?></div>
-                        <div class="cc-stat-lbl"><?= _e('Clients') ?></div>
+                        <div class="cc-stat-lbl"><?= _e('العملاء') ?></div>
                     </div>
                     <div class="cc-stat">
                         <div class="cc-stat-val"><?= number_format($row['total_amount'], 0) ?></div>
-                        <div class="cc-stat-lbl"><?= _e('Amount') ?></div>
+                        <div class="cc-stat-lbl"><?= _e('المبلغ') ?></div>
                     </div>
                 </div>
             </div>
@@ -410,19 +410,19 @@ $periodLabel = $isToday
         <?php } ?>
 
         <div class="detail-section">
-            <h3><i class="fa fa-list"></i> <?= _e('Sales Details') ?> <span id="filter-label" style="font-size:12px;color:rgba(255,255,255,0.3);font-weight:400;"></span></h3>
+            <h3><i class="fa fa-list"></i> <?= _e('تفاصيل المبيعات') ?> <span id="filter-label" style="font-size:12px;color:rgba(255,255,255,0.3);font-weight:400;"></span></h3>
             <div class="detail-table-wrap">
                 <table class="detail-table" id="sales-detail-table">
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th><?= _e('Client Name') ?></th>
-                            <th><?= _e('National ID') ?></th>
-                            <th><?= _e('Phone') ?></th>
-                            <th><?= _e('Company') ?></th>
-                            <th><?= _e('Status') ?></th>
-                            <th><?= _e('Amount') ?></th>
-                            <th><?= _e('Date') ?></th>
+                            <th><?= _e('اسم العميل') ?></th>
+                            <th><?= _e('الرقم الوطني') ?></th>
+                            <th><?= _e('الهاتف') ?></th>
+                            <th><?= _e('الشركة') ?></th>
+                            <th><?= _e('الحالة') ?></th>
+                            <th><?= _e('المبلغ') ?></th>
+                            <th><?= _e('التاريخ') ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -461,7 +461,7 @@ $periodLabel = $isToday
                     });
 
                     if (empty($allDetails)) {
-                        echo '<tr class="empty-row"><td colspan="8">' . _e('No sales found for this period') . '</td></tr>';
+                        echo '<tr class="empty-row"><td colspan="8">' . _e('لم يتم العثور على مبيعات لهذه الفترة') . '</td></tr>';
                     }
 
                     $idx = 0;
@@ -492,9 +492,9 @@ $periodLabel = $isToday
         </div>
 
         <div class="sales-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('Made with') ?> <i class="fa fa-heart"></i> <?= _e('by MÜJEER') ?></a>
+            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('صُنع بـ') ?> <i class="fa fa-heart"></i> <?= _e('بواسطة MÜJEER') ?></a>
             &nbsp;&middot;&nbsp;
-            &copy; <?= _e('Fahras') ?> <?= date('Y') ?>
+            &copy; <?= _e('فهرس') ?> <?= date('Y') ?>
         </div>
     </div>
 </div>
@@ -528,7 +528,7 @@ function filterTable(type, companyKey) {
             r.style.display = 'none';
         }
     });
-    label.textContent = '(' + shown + ' <?= _e('results') ?>)';
+    label.textContent = '(' + shown + ' <?= _e('نتائج') ?>)';
 
     cards.forEach(function(c) { c.classList.remove('active'); });
     event.currentTarget.classList.add('active');

@@ -6,7 +6,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 $token = 'mojeer';
-$page_title = 'Import Tool';
+$page_title = 'أداة الاستيراد';
 include 'header.php';
 
 require_permission('import', 'execute');
@@ -225,34 +225,34 @@ if (!empty($_FILES['file']['name'])) {
     <div class="container">
         <div class="import-header">
             <h1><i class="fad fa-upload"></i> <?=_e($page_title)?></h1>
-            <p><?=_e('Import clients from Excel files')?></p>
+            <p><?=_e('استيراد العملاء من ملفات إكسل')?></p>
             <a href="template.xlsx?ver=<?=time()?>" target="_blank" class="template-link">
-                <i class="fa fa-download"></i> <?=_e('Template File')?>
+                <i class="fa fa-download"></i> <?=_e('ملف القالب')?>
             </a>
         </div>
 
         <?php if ($result_count > 0 && $_POST) { ?>
-        <div class="import-alert-success"><i class="fa fa-check-circle"></i> <?=$result_count?> <?=_e('Clients has been added successfully')?>.</div>
+        <div class="import-alert-success"><i class="fa fa-check-circle"></i> <?=$result_count?> <?=_e('تمت إضافة العملاء بنجاح')?>.</div>
         <?php } ?>
 
         <?php if ($result_count == 0 && $_POST) { ?>
-        <div class="import-alert-danger"><i class="fa fa-times-circle"></i> <?=_e('No any clients added')?>.</div>
+        <div class="import-alert-danger"><i class="fa fa-times-circle"></i> <?=_e('لم تتم إضافة أي عملاء')?>.</div>
         <?php } ?>
 
-        <div class="import-alert-info"><i class="fa fa-info-circle"></i> <?=_e('Please using the Excel template file for importing data')?> - <?=_e('National ID is unique, we will skip duplicates')?>.</div>
+        <div class="import-alert-info"><i class="fa fa-info-circle"></i> <?=_e('يرجى استخدام ملف القالب لاستيراد البيانات')?> - <?=_e('الرقم الوطني فريد، سيتم تخطي المكرر')?>.</div>
 
         <div class="import-form-card">
             <form method="post" action="" enctype="multipart/form-data">
                 <div class="import-form-row">
                     <div>
-                        <label><?=_e('Please upload your file')?></label>
+                        <label><?=_e('يرجى رفع الملف')?></label>
                         <input accept=".xls, .xlsx, .csv" type="file" name="file" class="form-control" required>
-                        <small><?=_e('Files Accepted')?>: xlsx, xls, csv</small>
+                        <small><?=_e('الملفات المقبولة')?>: xlsx, xls, csv</small>
                     </div>
                     <div>
-                        <label><?=_e('Please select account')?></label>
+                        <label><?=_e('يرجى اختيار الشركة')?></label>
                         <select class="form-control" name="account" required>
-                            <option value="">- <?=_e('Select')?> -</option>
+                            <option value="">- <?=_e('اختيار')?> -</option>
                             <?php
                                 if (user_can('accounts', 'view')) {
                                     $accounts = $db->get_all( 'accounts' );
@@ -266,14 +266,14 @@ if (!empty($_FILES['file']['name'])) {
                         </select>
                     </div>
                 </div>
-                <input class="btn-submit" type="submit" value="<?=_e('Process')?>">
+                <input class="btn-submit" type="submit" value="<?=_e('معالجة')?>">
             </form>
         </div>
 
         <div class="import-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('Made with')?> <i class="fa fa-heart"></i> <?=_e('by MÜJEER')?></a>
+            <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('صُنع بـ')?> <i class="fa fa-heart"></i> <?=_e('بواسطة MÜJEER')?></a>
             &nbsp;&middot;&nbsp;
-            &copy; <?=_e('Fahras')?> <?=date('Y')?>
+            &copy; <?=_e('فهرس')?> <?=date('Y')?>
         </div>
     </div>
 </div>

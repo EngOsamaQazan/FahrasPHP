@@ -1,12 +1,12 @@
 <?php
-	$page_title = 'Clients';
+	$page_title = 'العملاء';
 	$token = 'mojeer';
 	include 'header.php';
 	require_permission('clients', 'view');
 
 	$ar_labels = [
 		'id' => 'رقم',
-		'account' => 'الحساب',
+		'account' => 'الشركة',
 		'name' => 'الاسم',
 		'contracts' => 'العقود',
 		'sell_date' => 'تاريخ البيع',
@@ -25,7 +25,7 @@
 
 	$en_labels = [
 		'id' => '#',
-		'account' => 'Account',
+		'account' => 'Company',
 		'name' => 'Name',
 		'contracts' => 'Contracts',
 		'sell_date' => 'Sell Date',
@@ -449,7 +449,7 @@
 		$xcrud->order_by('id','desc');
 		$xcrud->language($user['language']);
 
-		if (!user_can('accounts', 'view')) {
+		if (!empty($user['account'])) {
 			$xcrud->where('account =', $user['account']);
 		}
 
@@ -490,9 +490,9 @@
         </div>
 
         <div class="clients-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('Made with')?> <i class="fa fa-heart"></i> <?=_e('by MÜJEER')?></a>
+            <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('صُنع بـ')?> <i class="fa fa-heart"></i> <?=_e('بواسطة MÜJEER')?></a>
             &nbsp;&middot;&nbsp;
-            &copy; <?=_e('Fahras')?> <?=date('Y')?>
+            &copy; <?=_e('فهرس')?> <?=date('Y')?>
         </div>
     </div>
 </div>

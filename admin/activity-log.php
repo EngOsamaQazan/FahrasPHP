@@ -1,6 +1,6 @@
 <?php
 $token = 'mojeer';
-$page_title = 'Activity Log';
+$page_title = 'سجل النشاطات';
 include 'header.php';
 
 require_permission('activity_log', 'view');
@@ -39,17 +39,17 @@ $logs = $stmt->fetchAll();
 $allUsers = $db->get_all('users');
 
 $actionLabels = [
-    'login'             => ['fa-sign-in', 'al-badge-success', _e('Login')],
-    'logout'            => ['fa-sign-out', 'al-badge-default', _e('Logout')],
-    'search'            => ['fa-search', 'al-badge-info', _e('Search')],
-    'batch_scan'        => ['fa-radar', 'al-badge-warning', _e('Batch Scan')],
-    'sync_apis'         => ['fa-sync', 'al-badge-info', _e('API Sync')],
-    'violation_mark_paid' => ['fa-check', 'al-badge-success', _e('Violation Paid')],
-    'violation_resolve' => ['fa-handshake', 'al-badge-warning', _e('Violation Resolved')],
-    'violation_exempt_150' => ['fa-minus-circle', 'al-badge-info', _e('Violation Exempted')],
-    'violation_exempt_guarantor' => ['fa-user-shield', 'al-badge-info', _e('Violation Exempted')],
-    'violation_dispute'  => ['fa-exclamation-triangle', 'al-badge-danger', _e('Violation Disputed')],
-    'client_import'      => ['fa-upload', 'al-badge-info', _e('Client Import')],
+    'login'             => ['fa-sign-in', 'al-badge-success', _e('تسجيل الدخول')],
+    'logout'            => ['fa-sign-out', 'al-badge-default', _e('تسجيل الخروج')],
+    'search'            => ['fa-search', 'al-badge-info', _e('بحث')],
+    'batch_scan'        => ['fa-radar', 'al-badge-warning', _e('مسح جماعي')],
+    'sync_apis'         => ['fa-sync', 'al-badge-info', _e('مزامنة API')],
+    'violation_mark_paid' => ['fa-check', 'al-badge-success', _e('مخالفة مدفوعة')],
+    'violation_resolve' => ['fa-handshake', 'al-badge-warning', _e('مخالفة محلولة')],
+    'violation_exempt_150' => ['fa-minus-circle', 'al-badge-info', _e('مخالفة معفاة')],
+    'violation_exempt_guarantor' => ['fa-user-shield', 'al-badge-info', _e('مخالفة معفاة')],
+    'violation_dispute'  => ['fa-exclamation-triangle', 'al-badge-danger', _e('مخالفة متنازع عليها')],
+    'client_import'      => ['fa-upload', 'al-badge-info', _e('استيراد العملاء')],
 ];
 ?>
 
@@ -264,36 +264,36 @@ $actionLabels = [
 <div class="activity-page">
     <div class="container">
         <div class="activity-header">
-            <h1><i class="fa fa-history"></i> <?= _e('Activity Log') ?></h1>
-            <p><?= _e('Track all user actions and system events') ?></p>
+            <h1><i class="fa fa-history"></i> <?= _e('سجل النشاطات') ?></h1>
+            <p><?= _e('تتبع جميع إجراءات المستخدمين وأحداث النظام') ?></p>
         </div>
 
         <div class="al-filter-card">
             <form method="get">
                 <div class="al-filter-row">
                     <select name="user_id">
-                        <option value=""><?= _e('All Users') ?></option>
+                        <option value=""><?= _e('جميع المستخدمين') ?></option>
                         <?php foreach ($allUsers as $u) { ?>
                         <option value="<?= $u['id'] ?>" <?= $filterUser == $u['id'] ? 'selected' : '' ?>><?= htmlspecialchars($u['name'] ?? $u['username']) ?></option>
                         <?php } ?>
                     </select>
-                    <input type="text" name="action" placeholder="<?= _e('Action') ?>" value="<?= htmlspecialchars($filterAction) ?>">
+                    <input type="text" name="action" placeholder="<?= _e('إجراء') ?>" value="<?= htmlspecialchars($filterAction) ?>">
                     <input type="date" name="date" value="<?= htmlspecialchars($filterDate) ?>">
-                    <button type="submit" class="al-btn-filter"><i class="fa fa-filter"></i> <?= _e('Filter') ?></button>
-                    <a href="activity-log" class="al-btn-reset"><i class="fa fa-refresh"></i> <?= _e('Reset') ?></a>
+                    <button type="submit" class="al-btn-filter"><i class="fa fa-filter"></i> <?= _e('تصفية') ?></button>
+                    <a href="activity-log" class="al-btn-reset"><i class="fa fa-refresh"></i> <?= _e('إعادة تعيين') ?></a>
                 </div>
             </form>
         </div>
 
         <div class="al-results-bar">
-            <h4><i class="fa fa-list-ul"></i> <?= _e('Activity Log') ?></h4>
-            <span class="badge-count"><?= count($logs) ?> <?= _e('results') ?></span>
+            <h4><i class="fa fa-list-ul"></i> <?= _e('سجل النشاطات') ?></h4>
+            <span class="badge-count"><?= count($logs) ?> <?= _e('نتيجة') ?></span>
         </div>
 
         <?php if (empty($logs)) { ?>
             <div class="al-empty">
                 <i class="fa fa-inbox"></i>
-                <p><?= _e('No activity logs found') ?></p>
+                <p><?= _e('لم يتم العثور على سجلات نشاط') ?></p>
             </div>
         <?php } ?>
 
@@ -320,12 +320,12 @@ $actionLabels = [
         </div>
         <?php } ?>
 
-        <div class="al-footer-note"><i class="fa fa-info-circle"></i> <?= _e('Showing last 500 entries') ?></div>
+        <div class="al-footer-note"><i class="fa fa-info-circle"></i> <?= _e('عرض آخر 500 سجل') ?></div>
 
         <div class="activity-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('Made with') ?> <i class="fa fa-heart"></i> <?= _e('by MÜJEER') ?></a>
+            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('صُنع بـ') ?> <i class="fa fa-heart"></i> <?= _e('بواسطة MÜJEER') ?></a>
             &nbsp;&middot;&nbsp;
-            &copy; <?= _e('Fahras') ?> <?= date('Y') ?>
+            &copy; <?= _e('فهرس') ?> <?= date('Y') ?>
         </div>
     </div>
 </div>

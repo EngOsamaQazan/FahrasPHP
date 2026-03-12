@@ -16,8 +16,8 @@ require_once __DIR__ . '/smplPDO.php';
 
 $db_host = 'localhost';
 $db_name = 'fahras_db';
-$db_user = 'root';
-$db_pass = '';
+$db_user = 'osama';
+$db_pass = 'OsamaDB123';
 
 $db = new smplPDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass);
 
@@ -418,6 +418,23 @@ function GUID() {
         mt_rand(16384, 20479), mt_rand(32768, 49151),
         mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535)
     );
+}
+
+// ─── Date Helpers ─────────────────────────────────────────────────
+
+function formatTo12h($dateStr) {
+    if (empty($dateStr)) return '';
+    if ($dateStr instanceof DateTimeInterface) {
+        return $dateStr->format('Y-m-d h:i A');
+    }
+    $dateStr = trim((string)$dateStr);
+    if ($dateStr === '') return '';
+    try {
+        $dt = new DateTime($dateStr);
+        return $dt->format('Y-m-d h:i A');
+    } catch (Exception $e) {
+        return $dateStr;
+    }
 }
 
 // ─── Load Current User ────────────────────────────────────────────

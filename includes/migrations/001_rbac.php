@@ -93,7 +93,6 @@ echo "[3/5] Seeding roles and permissions... ";
 
 $rolesMeta = [
     'super_admin'   => ['مدير النظام',  'Super Admin',   'صلاحيات كاملة بما فيها إدارة الأدوار', 1],
-    'admin'         => ['مدير',         'Administrator', 'صلاحيات كاملة ما عدا إدارة الأدوار',   1],
     'company_admin' => ['مدير شركة',    'Company Admin', 'إدارة العملاء والمخالفات للشركة',      1],
     'user'          => ['مستخدم',       'User',          'إضافة وتعديل العملاء',                 1],
     'viewer'        => ['مشاهد',        'Viewer',        'عرض البيانات فقط',                     1],
@@ -116,10 +115,10 @@ $permMeta = [
     'view_jobs'             => ['jobs',         'view',    'الوظائف - عرض',          'Jobs - View',           7],
     'view_violations'       => ['violations',   'view',    'المخالفات - عرض',        'Violations - View',     8],
     'manage_violations'     => ['violations',   'manage',  'المخالفات - إدارة',      'Violations - Manage',   9],
-    'view_accounts'         => ['accounts',     'view',    'الحسابات - عرض',         'Accounts - View',       10],
-    'create_accounts'       => ['accounts',     'create',  'الحسابات - إضافة',       'Accounts - Create',     11],
-    'edit_accounts'         => ['accounts',     'edit',    'الحسابات - تعديل',       'Accounts - Edit',       12],
-    'delete_accounts'       => ['accounts',     'delete',  'الحسابات - حذف',         'Accounts - Delete',     13],
+    'view_accounts'         => ['accounts',     'view',    'الشركات - عرض',         'Companies - View',       10],
+    'create_accounts'       => ['accounts',     'create',  'الشركات - إضافة',       'Companies - Create',     11],
+    'edit_accounts'         => ['accounts',     'edit',    'الشركات - تعديل',       'Companies - Edit',       12],
+    'delete_accounts'       => ['accounts',     'delete',  'الشركات - حذف',         'Companies - Delete',     13],
     'view_users'            => ['users',        'view',    'المستخدمين - عرض',       'Users - View',          14],
     'create_users'          => ['users',        'create',  'المستخدمين - إضافة',     'Users - Create',        15],
     'edit_users'            => ['users',        'edit',    'المستخدمين - تعديل',     'Users - Edit',          16],
@@ -168,7 +167,6 @@ $allPermNames = array_keys($permMeta);
 
 $roleAssignments = [
     'super_admin'   => $allPermNames,
-    'admin'         => array_filter($allPermNames, fn($p) => !str_contains($p, '_roles') && $p !== 'view_sales_report'),
     'company_admin' => [
         'view_dashboard', 'view_clients', 'create_clients', 'edit_clients', 'delete_clients', 'export_clients',
         'import_clients', 'view_jobs', 'view_violations', 'manage_violations', 'view_client_attachments',
@@ -203,10 +201,10 @@ if (!$colCheck->fetch()) {
 }
 
 $oldToNew = [
-    'Administrator' => $roleMap['admin']       ?? null,
+    'Administrator' => $roleMap['super_admin'] ?? null,
     'User'          => $roleMap['user']        ?? null,
     'super_admin'   => $roleMap['super_admin'] ?? null,
-    'admin'         => $roleMap['admin']       ?? null,
+    'admin'         => $roleMap['super_admin'] ?? null,
     'company_admin' => $roleMap['company_admin'] ?? null,
     'user'          => $roleMap['user']        ?? null,
     'viewer'        => $roleMap['viewer']      ?? null,

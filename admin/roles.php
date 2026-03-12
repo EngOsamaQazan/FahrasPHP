@@ -1,5 +1,5 @@
 <?php
-$page_title = 'Roles & Permissions';
+$page_title = 'الأدوار والصلاحيات';
 $token = 'mojeer';
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -28,7 +28,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             $stmt = $db->prepare("SELECT r.*, 
                 (SELECT COUNT(*) FROM users u WHERE u.role_id = r.id) as user_count,
                 (SELECT COUNT(*) FROM role_has_permissions rp WHERE rp.role_id = r.id) as perm_count
-                FROM roles r ORDER BY r.id");
+                FROM roles r WHERE r.name != 'admin' ORDER BY r.id");
             $stmt->execute();
             echo json_encode(['success' => true, 'roles' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
             exit;
@@ -188,7 +188,7 @@ $moduleLabels = [
     'import'       => ['ar' => 'الاستيراد',      'en' => 'Import',       'icon' => 'fa-upload'],
     'jobs'         => ['ar' => 'الوظائف',        'en' => 'Jobs',         'icon' => 'fa-briefcase'],
     'violations'   => ['ar' => 'المخالفات',      'en' => 'Violations',   'icon' => 'fa-exclamation-triangle'],
-    'accounts'     => ['ar' => 'الحسابات',       'en' => 'Accounts',     'icon' => 'fa-building'],
+    'accounts'     => ['ar' => 'الشركات',       'en' => 'Companies',     'icon' => 'fa-building'],
     'users'        => ['ar' => 'المستخدمين',     'en' => 'Users',        'icon' => 'fa-user-cog'],
     'roles'        => ['ar' => 'الأدوار',        'en' => 'Roles',        'icon' => 'fa-shield-alt'],
     'scan'         => ['ar' => 'الجرد',          'en' => 'Scan',         'icon' => 'fa-radar'],
@@ -593,8 +593,8 @@ $actionLabels = [
 <div class="roles-page">
     <div class="container">
         <div class="roles-header">
-            <h1><i class="fad fa-shield-alt"></i> <?=_e('Roles & Permissions')?></h1>
-            <p><?=_e('Manage roles and control access to system modules')?></p>
+            <h1><i class="fad fa-shield-alt"></i> <?=_e('الأدوار والصلاحيات')?></h1>
+            <p><?=_e('إدارة الأدوار والتحكم في صلاحيات الوصول لأقسام النظام')?></p>
         </div>
 
         <!-- Roles Grid -->
@@ -603,32 +603,32 @@ $actionLabels = [
         <!-- Editor Panel -->
         <div class="editor-panel" id="editorPanel">
             <h2>
-                <span id="editorTitle"><?=_e('Edit Role')?></span>
-                <button class="close-editor" onclick="closeEditor()" title="<?=_e('Close')?>"><i class="fa fa-times"></i></button>
+                <span id="editorTitle"><?=_e('تعديل الدور')?></span>
+                <button class="close-editor" onclick="closeEditor()" title="<?=_e('إغلاق')?>"><i class="fa fa-times"></i></button>
             </h2>
 
             <div class="editor-fields">
                 <input type="hidden" id="roleId" value="0">
                 <div class="field-group">
-                    <label><?=_e('Role Name (System)')?></label>
-                    <input type="text" id="roleName" placeholder="e.g. accountant" dir="ltr">
+                    <label><?=_e('اسم الدور (النظام)')?></label>
+                    <input type="text" id="roleName" placeholder="مثال: accountant" dir="ltr">
                 </div>
                 <div class="field-group">
-                    <label><?=_e('Display Name (Arabic)')?></label>
+                    <label><?=_e('الاسم العربي')?></label>
                     <input type="text" id="roleDisplayAr" placeholder="مثال: محاسب">
                 </div>
                 <div class="field-group">
-                    <label><?=_e('Display Name (English)')?></label>
-                    <input type="text" id="roleDisplayEn" placeholder="e.g. Accountant" dir="ltr">
+                    <label><?=_e('الاسم الإنجليزي')?></label>
+                    <input type="text" id="roleDisplayEn" placeholder="مثال: Accountant" dir="ltr">
                 </div>
                 <div class="field-group">
-                    <label><?=_e('Description')?></label>
-                    <input type="text" id="roleDesc" placeholder="<?=_e('Short description of the role')?>">
+                    <label><?=_e('الوصف')?></label>
+                    <input type="text" id="roleDesc" placeholder="<?=_e('وصف مختصر للدور')?>">
                 </div>
             </div>
 
             <div class="perm-section-title">
-                <span><i class="fal fa-key"></i> <?=_e('Permissions')?></span>
+                <span><i class="fal fa-key"></i> <?=_e('الصلاحيات')?></span>
                 <span class="perm-count" id="permCount">0 / 0</span>
             </div>
 
@@ -640,18 +640,18 @@ $actionLabels = [
             <div class="save-bar">
                 <div>
                     <?php if ($canEdit || $canCreate) { ?>
-                    <button class="btn-save" id="btnSave" onclick="saveRole()"><?=_e('Save')?></button>
+                    <button class="btn-save" id="btnSave" onclick="saveRole()"><?=_e('حفظ')?></button>
                     <?php } ?>
-                    <button class="btn-cancel" onclick="closeEditor()"><?=_e('Cancel')?></button>
+                    <button class="btn-cancel" onclick="closeEditor()"><?=_e('إلغاء')?></button>
                     <span class="save-msg" id="saveMsg"></span>
                 </div>
             </div>
         </div>
 
         <div class="roles-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('Made with')?> <i class="fa fa-heart"></i> <?=_e('by MÜJEER')?></a>
+            <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('صُنع بـ')?> <i class="fa fa-heart"></i> <?=_e('بواسطة MÜJEER')?></a>
             &nbsp;&middot;&nbsp;
-            &copy; <?=_e('Fahras')?> <?=date('Y')?>
+            &copy; <?=_e('فهرس')?> <?=date('Y')?>
         </div>
     </div>
 </div>

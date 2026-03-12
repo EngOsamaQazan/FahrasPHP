@@ -767,17 +767,57 @@ function searchPartyAcrossSources($name, $nationalId = '') {
  */
 function getAccountPhone($entry) {
     $accounts = _getAccountsCache();
+    $reverseAliases = ['بسيل' => 'عمار'];
 
     $acc = $entry['account'] ?? '';
+
     if (is_numeric($acc) && (int)$acc > 0) {
         $row = $accounts['by_id'][(int)$acc] ?? null;
-        if ($row) return $row['phone'] ?? $row['mobile'] ?? '';
+        if ($row) {
+            $ph = $row['phone'] ?? $row['mobile'] ?? '';
+            if ($ph !== '') return $ph;
+        }
     }
 
     $accountName = (string)$acc;
     if (!empty($accountName)) {
         $row = $accounts['by_name'][$accountName] ?? null;
-        if ($row) return $row['phone'] ?? $row['mobile'] ?? '';
+        if ($row) {
+            $ph = $row['phone'] ?? $row['mobile'] ?? '';
+            if ($ph !== '') return $ph;
+        }
+        $altName = $reverseAliases[$accountName] ?? null;
+        if ($altName) {
+            $row = $accounts['by_name'][$altName] ?? null;
+            if ($row) {
+                $ph = $row['phone'] ?? $row['mobile'] ?? '';
+                if ($ph !== '') return $ph;
+            }
+        }
+    }
+
+    $sourceMap = [
+        'zajal' => 'زجل',
+        'jadal' => 'جدل',
+        'namaa' => 'نماء',
+        'bseel' => 'بسيل',
+    ];
+    $source = $entry['_source'] ?? '';
+    if (!empty($source) && isset($sourceMap[$source])) {
+        $srcName = $sourceMap[$source];
+        $row = $accounts['by_name'][$srcName] ?? null;
+        if ($row) {
+            $ph = $row['phone'] ?? $row['mobile'] ?? '';
+            if ($ph !== '') return $ph;
+        }
+        $altName = $reverseAliases[$srcName] ?? null;
+        if ($altName) {
+            $row = $accounts['by_name'][$altName] ?? null;
+            if ($row) {
+                $ph = $row['phone'] ?? $row['mobile'] ?? '';
+                if ($ph !== '') return $ph;
+            }
+        }
     }
 
     return $entry['phone'] ?? '';

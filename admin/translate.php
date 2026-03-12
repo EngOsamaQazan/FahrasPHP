@@ -1,5 +1,5 @@
 <?php
-	$page_title = 'Translate';
+	$page_title = 'الترجمة';
 	$token = 'mojeer';
 	include 'header.php';
 	require_permission('translate', 'view');
@@ -39,7 +39,7 @@
     <div class="container">
         <div class="xcrud-page-header">
             <h1><i class="fad fa-language"></i> <?=_e($page_title)?></h1>
-            <p><?=_e('Manage translations')?></p>
+            <p><?=_e('إدارة الترجمات')?></p>
         </div>
 
 	<?php
@@ -59,8 +59,8 @@
 		$xcrud->set_attr('ar',array('rows'=>'10'));
 
 		$xcrud->label(array(	
-								'text' => _e('Text'),
-								'en' => _e('English'),
+								'text' => _e('النص'),
+								'en' => _e('الإنجليزية'),
 								'ar' => _e('العربية'),
 		));
 
@@ -79,9 +79,9 @@
 	?>
 
         <div class="xcrud-page-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('Made with')?> <i class="fa fa-heart"></i> <?=_e('by MÜJEER')?></a>
+            <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('صُنع بـ')?> <i class="fa fa-heart"></i> <?=_e('بواسطة MÜJEER')?></a>
             &nbsp;&middot;&nbsp;
-            &copy; <?=_e('Fahras')?> <?=date('Y')?>
+            &copy; <?=_e('فهرس')?> <?=date('Y')?>
         </div>
     </div>
 </div>

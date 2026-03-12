@@ -1,11 +1,13 @@
 <?php
 $token = 'mojeer';
-$page_title = 'Violations';
+$page_title = 'المخالفات';
 include 'header.php';
 
 require_once __DIR__ . '/../includes/violation_engine.php';
 
 require_permission('violations', 'view');
+
+// formatTo12h() is now in bootstrap.php
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && user_can('violations', 'manage')) {
     $action = $_POST['action'] ?? '';
@@ -431,29 +433,29 @@ $accounts = $db->get_all('accounts');
 <div class="violations-page">
     <div class="container">
         <div class="violations-header">
-            <h1><i class="fa fa-exclamation-triangle"></i> <?= _e('Violations') ?></h1>
-            <p><?= _e('Track and manage contract violations') ?></p>
+            <h1><i class="fa fa-exclamation-triangle"></i> <?= _e('المخالفات') ?></h1>
+            <p><?= _e('تتبع وإدارة مخالفات العقود') ?></p>
         </div>
 
         <div class="filter-card">
             <form method="get">
                 <div class="filter-row">
-                    <input type="month" name="month" value="<?= htmlspecialchars($filterMonth) ?>" placeholder="<?= _e('Month') ?>">
+                    <input type="month" name="month" value="<?= htmlspecialchars($filterMonth) ?>" placeholder="<?= _e('الشهر') ?>">
                     <select name="status">
-                        <option value=""><?= _e('All Statuses') ?></option>
-                        <option value="active" <?= $filterStatus === 'active' ? 'selected' : '' ?>><?= _e('Active') ?></option>
-                        <option value="disputed" <?= $filterStatus === 'disputed' ? 'selected' : '' ?>><?= _e('Disputed') ?></option>
-                        <option value="resolved" <?= $filterStatus === 'resolved' ? 'selected' : '' ?>><?= _e('Resolved') ?></option>
-                        <option value="exempted_below_150" <?= $filterStatus === 'exempted_below_150' ? 'selected' : '' ?>><?= _e('Exempted (Below 150)') ?></option>
-                        <option value="exempted_guarantor" <?= $filterStatus === 'exempted_guarantor' ? 'selected' : '' ?>><?= _e('Exempted (Guarantor)') ?></option>
+                        <option value=""><?= _e('جميع الحالات') ?></option>
+                        <option value="active" <?= $filterStatus === 'active' ? 'selected' : '' ?>><?= _e('نشطة') ?></option>
+                        <option value="disputed" <?= $filterStatus === 'disputed' ? 'selected' : '' ?>><?= _e('متنازع عليها') ?></option>
+                        <option value="resolved" <?= $filterStatus === 'resolved' ? 'selected' : '' ?>><?= _e('تم الحل') ?></option>
+                        <option value="exempted_below_150" <?= $filterStatus === 'exempted_below_150' ? 'selected' : '' ?>><?= _e('معفاة (أقل من 150)') ?></option>
+                        <option value="exempted_guarantor" <?= $filterStatus === 'exempted_guarantor' ? 'selected' : '' ?>><?= _e('معفاة (كفيل)') ?></option>
                     </select>
                     <select name="account">
-                        <option value=""><?= _e('All Accounts') ?></option>
+                        <option value=""><?= _e('جميع الشركات') ?></option>
                         <?php foreach ($accounts as $acc) { ?>
                         <option value="<?= htmlspecialchars($acc['name']) ?>" <?= $filterAccount === $acc['name'] ? 'selected' : '' ?>><?= htmlspecialchars($acc['name']) ?></option>
                         <?php } ?>
                     </select>
-                    <button type="submit" class="btn-filter"><i class="fa fa-filter"></i> <?= _e('Filter') ?></button>
+                    <button type="submit" class="btn-filter"><i class="fa fa-filter"></i> <?= _e('تصفية') ?></button>
                 </div>
             </form>
         </div>
@@ -475,17 +477,17 @@ $accounts = $db->get_all('accounts');
     if (!empty($summary) && user_can('violations', 'manage')) {
     ?>
         <div class="summary-card">
-            <div class="summary-card-header"><i class="fa fa-chart-bar"></i> <?= _e('This Month Summary') ?></div>
+            <div class="summary-card-header"><i class="fa fa-chart-bar"></i> <?= _e('ملخص هذا الشهر') ?></div>
             <table>
                 <thead>
-                    <tr><th><?= _e('Violating Account') ?></th><th><?= _e('Violations') ?></th><th><?= _e('Unpaid Amount') ?></th></tr>
+                    <tr><th><?= _e('الشركة المخالفة') ?></th><th><?= _e('المخالفات') ?></th><th><?= _e('المبلغ غير المدفوع') ?></th></tr>
                 </thead>
                 <tbody>
                     <?php foreach ($summary as $s) { ?>
                     <tr>
                         <td><b><?= htmlspecialchars($s['violating_account']) ?></b></td>
                         <td><?= $s['total'] ?></td>
-                        <td><span style="color:#fc8181;font-weight:700;"><?= number_format($s['unpaid_total'], 2) ?></span> <?= _e('JOD') ?></td>
+                        <td><span style="color:#fc8181;font-weight:700;"><?= number_format($s['unpaid_total'], 2) ?></span> <?= _e('دينار') ?></td>
                     </tr>
                     <?php } ?>
                 </tbody>
@@ -494,14 +496,14 @@ $accounts = $db->get_all('accounts');
     <?php } ?>
 
         <div class="results-bar-v">
-            <h4><i class="fa fa-gavel"></i> <?= _e('Violations') ?></h4>
-            <span class="badge-count"><?= $totalRows ?> <?= _e('results') ?></span>
+            <h4><i class="fa fa-gavel"></i> <?= _e('المخالفات') ?></h4>
+            <span class="badge-count"><?= $totalRows ?> <?= _e('نتيجة') ?></span>
         </div>
 
         <?php if (empty($violations)) { ?>
             <div class="no-results-v">
                 <i class="fa fa-check-circle"></i>
-                <p><?= _e('No violations found') ?></p>
+                <p><?= _e('لم يتم العثور على مخالفات') ?></p>
             </div>
         <?php } ?>
 
@@ -515,28 +517,28 @@ $accounts = $db->get_all('accounts');
                 <?php } ?>
             </div>
             <div class="v-card-details">
-                <div class="v-card-detail"><span><?= _e('Entitled Account') ?>:</span> <?= htmlspecialchars($v['entitled_account']) ?></div>
-                <div class="v-card-detail"><span><?= _e('Entitled Contract Date') ?>:</span> <?= htmlspecialchars($v['entitled_sell_date'] ?? '') ?></div>
-                <div class="v-card-detail"><span><?= _e('Violating Account') ?>:</span> <?= htmlspecialchars($v['violating_account']) ?></div>
-                <div class="v-card-detail"><span><?= _e('Violation Date') ?>:</span> <?= htmlspecialchars($v['violating_sell_date'] ?? '') ?></div>
-                <div class="v-card-detail"><span><?= _e('Fine') ?>:</span> <b style="color:#fc8181;"><?= number_format($v['fine_amount'], 2) ?></b> <?= _e('JOD') ?></div>
+                <div class="v-card-detail"><span><?= _e('الشركة المستحقة') ?>:</span> <?= htmlspecialchars($v['entitled_account']) ?></div>
+                <div class="v-card-detail"><span><?= _e('تاريخ عقد المستحق') ?>:</span> <?= htmlspecialchars(formatTo12h($v['entitled_sell_date'] ?? '')) ?></div>
+                <div class="v-card-detail"><span><?= _e('الشركة المخالفة') ?>:</span> <?= htmlspecialchars($v['violating_account']) ?></div>
+                <div class="v-card-detail"><span><?= _e('تاريخ المخالفة') ?>:</span> <?= htmlspecialchars(formatTo12h($v['violating_sell_date'] ?? '')) ?></div>
+                <div class="v-card-detail"><span><?= _e('الغرامة') ?>:</span> <b style="color:#fc8181;"><?= number_format($v['fine_amount'], 2) ?></b> <?= _e('دينار') ?></div>
             </div>
             <div class="v-card-bottom">
                 <?php
                 $statusMap = [
-                    'active' => ['v-badge-danger', _e('Active')],
-                    'disputed' => ['v-badge-warning', _e('Disputed')],
-                    'resolved' => ['v-badge-success', _e('Resolved')],
-                    'exempted_below_150' => ['v-badge-info', _e('Exempted')],
-                    'exempted_guarantor' => ['v-badge-info', _e('Exempted')],
+                    'active' => ['v-badge-danger', _e('نشطة')],
+                    'disputed' => ['v-badge-warning', _e('متنازع عليها')],
+                    'resolved' => ['v-badge-success', _e('تم الحل')],
+                    'exempted_below_150' => ['v-badge-info', _e('معفاة')],
+                    'exempted_guarantor' => ['v-badge-info', _e('معفاة')],
                 ];
                 $sl = $statusMap[$v['status']] ?? ['v-badge-default', $v['status']];
                 ?>
                 <span class="v-badge <?= $sl[0] ?>"><?= $sl[1] ?></span>
                 <?php if ($v['is_paid']) { ?>
-                    <span class="v-badge v-badge-success"><i class="fa fa-check"></i> <?= _e('Paid') ?></span>
+                    <span class="v-badge v-badge-success"><i class="fa fa-check"></i> <?= _e('مدفوعة') ?></span>
                 <?php } else { ?>
-                    <span class="v-badge v-badge-default"><?= _e('Unpaid') ?></span>
+                    <span class="v-badge v-badge-default"><?= _e('غير مدفوعة') ?></span>
                 <?php } ?>
 
                 <?php if (user_can('violations', 'manage') && $v['status'] === 'active') { ?>
@@ -545,11 +547,11 @@ $accounts = $db->get_all('accounts');
                         <?= csrf_field() ?>
                         <input type="hidden" name="violation_id" value="<?= $v['id'] ?>">
                         <?php if (!$v['is_paid']) { ?>
-                        <button name="action" value="mark_paid" class="btn-action btn-pay" title="<?= _e('Mark Paid') ?>"><i class="fa fa-check"></i></button>
+                        <button name="action" value="mark_paid" class="btn-action btn-pay" title="<?= _e('تحديد كمدفوعة') ?>"><i class="fa fa-check"></i></button>
                         <?php } ?>
-                        <button name="action" value="exempt_150" class="btn-action btn-exempt" title="<?= _e('Exempt (Below 150)') ?>"><i class="fa fa-minus-circle"></i></button>
-                        <button name="action" value="exempt_guarantor" class="btn-action btn-exempt" title="<?= _e('Exempt (Guarantor)') ?>"><i class="fa fa-user-shield"></i></button>
-                        <button name="action" value="resolve" class="btn-action btn-resolve" title="<?= _e('Resolve') ?>"><i class="fa fa-handshake"></i></button>
+                        <button name="action" value="exempt_150" class="btn-action btn-exempt" title="<?= _e('إعفاء (أقل من 150)') ?>"><i class="fa fa-minus-circle"></i></button>
+                        <button name="action" value="exempt_guarantor" class="btn-action btn-exempt" title="<?= _e('إعفاء (كفيل)') ?>"><i class="fa fa-user-shield"></i></button>
+                        <button name="action" value="resolve" class="btn-action btn-resolve" title="<?= _e('حل') ?>"><i class="fa fa-handshake"></i></button>
                     </form>
                 </div>
                 <?php } ?>
@@ -601,14 +603,14 @@ $accounts = $db->get_all('accounts');
                     ?>
                 </ul>
             </nav>
-            <div class="page-info"><?= _e('Page') ?> <?= $page ?> / <?= $totalPages ?> (<?= $totalRows ?> <?= _e('results') ?>)</div>
+            <div class="page-info"><?= _e('صفحة') ?> <?= $page ?> / <?= $totalPages ?> (<?= $totalRows ?> <?= _e('نتيجة') ?>)</div>
         </div>
         <?php } ?>
 
         <div class="violations-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('Made with') ?> <i class="fa fa-heart"></i> <?= _e('by MÜJEER') ?></a>
+            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('صُنع بـ') ?> <i class="fa fa-heart"></i> <?= _e('بواسطة MÜJEER') ?></a>
             &nbsp;&middot;&nbsp;
-            &copy; <?= _e('Fahras') ?> <?= date('Y') ?>
+            &copy; <?= _e('فهرس') ?> <?= date('Y') ?>
         </div>
     </div>
 </div>

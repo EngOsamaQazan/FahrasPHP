@@ -16,6 +16,8 @@ $user = auth_user();
 setcookie('language', $user['language'] ?? 'ar', time() + (86400 * 30), "/");
 
 $lang = $user['language'] ?? 'ar';
+$currentTheme = $_COOKIE['fahras_theme'] ?? 'dark';
+$isDark = ($currentTheme !== 'light');
 ?>
 <!DOCTYPE html>
 <html lang="<?= $lang ?>">
@@ -24,7 +26,7 @@ $lang = $user['language'] ?? 'ar';
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="<?= csrf_token() ?>">
-    <title><?=_e('Fahras')?> - <?=_e($page_title ?? 'Dashboard')?></title>
+    <title><?=_e('فهرس')?> - <?=_e($page_title ?? 'لوحة التحكم')?></title>
     <link rel="icon" href="/admin/img/fahras-logo.png" type="image/png">
     <link href="https://iweb.ps/fs/css/all.css" rel="stylesheet">
     <?php if ($lang == 'ar') { ?>
@@ -48,67 +50,86 @@ $lang = $user['language'] ?? 'ar';
     <?php if ($lang == 'ar') { ?>
     <link rel="stylesheet" type="text/css" href="/admin/css/rtl.css?ver=<?=time()?>">
     <?php } ?>
-    <link rel="stylesheet" type="text/css" href="/admin/css/dark-theme.css?ver=<?=time()?>">
+    <link id="dark-theme-link" rel="stylesheet" type="text/css" href="/admin/css/dark-theme.css?ver=<?=time()?>"<?= $isDark ? '' : ' disabled' ?>>
+    <link rel="stylesheet" type="text/css" href="/admin/css/light-overrides.css?ver=<?=time()?>">
+    <script>
+    (function(){
+      var t = localStorage.getItem('fahras_theme') || '<?= $currentTheme ?>';
+      var link = document.getElementById('dark-theme-link');
+      if (t === 'light') {
+        if (link) link.disabled = true;
+        document.documentElement.classList.add('light-theme');
+      } else {
+        if (link) link.disabled = false;
+        document.documentElement.classList.remove('light-theme');
+      }
+    })();
+    </script>
   </head>
-  <body>
+  <body class="<?= $isDark ? 'dark-theme' : 'light-theme' ?>">
 	<nav class="navbar navbar-inverse">
 	  <div class="container">
 	    <div class="navbar-header">
 	      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-navbar" aria-expanded="false">
-	        <span class="sr-only">Toggle navigation</span>
+	        <span class="sr-only"><?=_e('القائمة')?></span>
 	        <span class="icon-bar"></span>
 	        <span class="icon-bar"></span>
 	        <span class="icon-bar"></span>
 	      </button>
-	      <a class="navbar-brand" href="/admin"><b><?=_e('Fahras')?></b></a>
+	      <a class="navbar-brand" href="/admin"><b><?=_e('فهرس')?></b></a>
 	    </div>
 
 	    <div class="collapse navbar-collapse" id="main-navbar">
 	      <ul class="nav navbar-nav">
             <?php if (user_can('dashboard', 'view')) { ?>
-            <li><a href="/admin"><i class="fal fa-search"></i> <?=_e('Home')?></a></li>
+            <li><a href="/admin"><i class="fal fa-search"></i> <?=_e('الرئيسية')?></a></li>
             <?php } ?>
             <?php if (user_can('clients', 'view')) { ?>
-            <li><a href="clients"><i class="fal fa-users"></i> <?=_e('Clients')?></a></li>
+            <li><a href="clients"><i class="fal fa-users"></i> <?=_e('العملاء')?></a></li>
             <?php } ?>
             <?php if (user_can('jobs', 'view')) { ?>
-            <li><a href="jobs"><i class="fal fa-briefcase"></i> <?=_e('Jobs')?></a></li>
+            <li><a href="jobs"><i class="fal fa-briefcase"></i> <?=_e('الوظائف')?></a></li>
             <?php } ?>
             <?php if (user_can('import', 'execute')) { ?>
-            <li><a href="import"><i class="fal fa-upload"></i> <?=_e('Import Tool')?></a></li>
+            <li><a href="import"><i class="fal fa-upload"></i> <?=_e('الاستيراد')?></a></li>
             <?php } ?>
             <?php if (user_can('violations', 'view')) { ?>
-            <li><a href="violations"><i class="fal fa-exclamation-triangle"></i> <?=_e('Violations')?></a></li>
+            <li><a href="violations"><i class="fal fa-exclamation-triangle"></i> <?=_e('المخالفات')?></a></li>
             <?php } ?>
             <?php if (user_can('accounts', 'view')) { ?>
-            <li><a href="accounts"><i class="fal fa-briefcase"></i> <?=_e('Accounts')?></a></li>
+            <li><a href="accounts"><i class="fal fa-building"></i> <?=_e('الشركات')?></a></li>
             <?php } ?>
             <?php if (user_can('users', 'view')) { ?>
-            <li><a href="users"><i class="fal fa-key"></i> <?=_e('Users')?></a></li>
+            <li><a href="users"><i class="fal fa-key"></i> <?=_e('المستخدمين')?></a></li>
             <?php } ?>
             <?php if (user_can('roles', 'view')) { ?>
-            <li><a href="roles"><i class="fal fa-shield-alt"></i> <?=_e('Roles')?></a></li>
+            <li><a href="roles"><i class="fal fa-shield-alt"></i> <?=_e('الأدوار')?></a></li>
             <?php } ?>
             <?php if (user_can('scan', 'view')) { ?>
-            <li><a href="scan"><i class="fal fa-radar"></i> <?=_e('Scan')?></a></li>
+            <li><a href="scan"><i class="fal fa-radar"></i> <?=_e('الجرد')?></a></li>
             <?php } ?>
             <?php if (user_can('reports', 'view')) { ?>
-            <li><a href="monthly-report"><i class="fal fa-chart-bar"></i> <?=_e('Reports')?></a></li>
+            <li><a href="monthly-report"><i class="fal fa-chart-bar"></i> <?=_e('التقارير')?></a></li>
             <?php } ?>
             <?php if (user_can('sales_report', 'view')) { ?>
-            <li><a href="sales-report"><i class="fal fa-chart-line"></i> <?=_e('Sales Report')?></a></li>
+            <li><a href="sales-report"><i class="fal fa-chart-line"></i> <?=_e('تقرير المبيعات')?></a></li>
             <?php } ?>
             <?php if (user_can('activity_log', 'view')) { ?>
-            <li><a href="activity-log"><i class="fal fa-history"></i> <?=_e('Activity Log')?></a></li>
+            <li><a href="activity-log"><i class="fal fa-history"></i> <?=_e('سجل النشاطات')?></a></li>
             <?php } ?>
 	      </ul>
         <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="#" onclick="toggleFahrasTheme(event)" title="<?= $isDark ? _e('الوضع الفاتح') : _e('الوضع الداكن') ?>">
+              <i class="fal <?= $isDark ? 'fa-sun' : 'fa-moon' ?>" id="themeToggleIcon"></i>
+            </a>
+          </li>
           <?php if ($lang == 'en') { ?>
           <li><a href="?lang=ar"><i class="fal fa-flag"></i> العربية</a></li>
           <?php } else { ?>
           <li><a href="?lang=en"><i class="fal fa-flag"></i> English</a></li>
           <?php } ?>
-          <li><a href="/admin/logout"><i class="fal fa-sign-out"></i> <?=_e('Logout')?></a></li>
+          <li><a href="/admin/logout"><i class="fal fa-sign-out"></i> <?=_e('تسجيل الخروج')?></a></li>
         </ul>
 	    </div>
 	  </div>

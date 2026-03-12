@@ -87,21 +87,108 @@ switch ($action) {
         break;
     case 'debug_dirs':
         header('Content-Type: application/json; charset=UTF-8');
-        $dirs = ['__DIR__' => __DIR__, 'parent' => dirname(__DIR__)];
-        $checkPaths = [
-            __DIR__ . '/uploads', __DIR__ . '/images', __DIR__ . '/files',
-            __DIR__ . '/doc_photos', __DIR__ . '/attachments',
-            dirname(__DIR__) . '/doc_photos', dirname(__DIR__) . '/uploads',
-            dirname(__DIR__) . '/accessdb',
-        ];
-        $result = ['dirs' => $dirs, 'paths' => []];
-        foreach ($checkPaths as $p) {
-            $info = ['path' => $p, 'exists' => is_dir($p)];
-            if ($info['exists']) {
-                $info['files'] = array_slice(array_diff(scandir($p), ['.', '..']), 0, 10);
+        $result = [];
+
+        $debugTables = ['attachment ', 'CUST_DOC'];
+        foreach ($debugTables as $tbl) {
+            $colSql = "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? ORDER BY ORDINAL_POSITION";
+            $colStmt = sqlsrv_query($conn, $colSql, [trim($tbl)]);
+            if (!$colStmt) {
+                $colStmt = sqlsrv_query($conn, $colSql, [$tbl]);
             }
-            $result['paths'][] = $info;
+            $cols = [];
+            if ($colStmt) {
+                while ($c = sqlsrv_fetch_array($colStmt, SQLSRV_FETCH_ASSOC)) {
+                    $cols[] = $c['COLUMN_NAME'] . ' (' . $c['DATA_TYPE'] . ($c['CHARACTER_MAXIMUM_LENGTH'] ? ':' . $c['CHARACTER_MAXIMUM_LENGTH'] : '') . ')';
+                }
+                sqlsrv_free_stmt($colStmt);
+            }
+            $result['table_' . trim($tbl)] = $cols;
         }
+
+        $clientName = trim($_GET['client_name'] ?? '');
+        if ($clientName !== '') {
+            $words = preg_split('/\s+/u', $clientName);
+            $words = array_filter($words, function($w) { return mb_strlen($w) > 0; });
+            $conds = [];
+            $params = [];
+            foreach ($words as $w) {
+                $conds[] = "m.name1 LIKE ?";
+                $params[] = '%' . $w . '%';
+            }
+            $findSql = "SELECT TOP 5 m.contract_num, m.name1 FROM main_cust m WHERE " . implode(' AND ', $conds);
+            $findStmt = sqlsrv_query($conn, $findSql, $params);
+            $result['clients'] = [];
+            if ($findStmt) {
+                while ($r2 = sqlsrv_fetch_array($findStmt, SQLSRV_FETCH_ASSOC)) {
+                    $cid = $r2['contract_num'];
+                    $client = ['id' => $cid, 'name' => $r2['name1']];
+
+                    $attSql = "SELECT TOP 10 * FROM [attachment ] WHERE cust_num = ? OR cont_num = ?";
+                    $attStmt = sqlsrv_query($conn, $attSql, [$cid, $cid]);
+                    $client['attachments'] = [];
+                    if ($attStmt) {
+                        while ($a = sqlsrv_fetch_array($attStmt, SQLSRV_FETCH_ASSOC)) {
+                            $row = [];
+                            foreach ($a as $k => $v) {
+                                if ($v instanceof DateTime) { $row[$k] = $v->format('Y-m-d h:i A'); }
+                                elseif (is_string($v) && strlen($v) > 500) { $row[$k] = '[BLOB:' . strlen($v) . ']'; }
+                                else { $row[$k] = $v; }
+                            }
+                            $client['attachments'][] = $row;
+                        }
+                        sqlsrv_free_stmt($attStmt);
+                    } else {
+                        $client['attachment_error'] = sqlsrv_errors();
+                    }
+
+                    $docSql = "SELECT TOP 10 * FROM [CUST_DOC] WHERE cust_num = ? OR contract_num = ?";
+                    $docStmt = sqlsrv_query($conn, $docSql, [$cid, $cid]);
+                    $client['cust_docs'] = [];
+                    if ($docStmt) {
+                        while ($d = sqlsrv_fetch_array($docStmt, SQLSRV_FETCH_ASSOC)) {
+                            $row = [];
+                            foreach ($d as $k => $v) {
+                                if ($v instanceof DateTime) { $row[$k] = $v->format('Y-m-d h:i A'); }
+                                elseif (is_string($v) && strlen($v) > 500) { $row[$k] = '[DATA:' . strlen($v) . ']'; }
+                                else { $row[$k] = $v; }
+                            }
+                            $client['cust_docs'][] = $row;
+                        }
+                        sqlsrv_free_stmt($docStmt);
+                    } else {
+                        $client['cust_doc_error'] = sqlsrv_errors();
+                    }
+
+                    $result['clients'][] = $client;
+                }
+                sqlsrv_free_stmt($findStmt);
+            }
+        }
+
+        $countSql = "SELECT COUNT(*) AS cnt FROM [attachment ]";
+        $cStmt = sqlsrv_query($conn, $countSql);
+        if ($cStmt) { $cr = sqlsrv_fetch_array($cStmt, SQLSRV_FETCH_ASSOC); $result['attachment_count'] = $cr['cnt']; sqlsrv_free_stmt($cStmt); }
+
+        $sampleSql = "SELECT TOP 5 id, cust_num, cont_num, [file], type_file FROM [attachment ] ORDER BY id DESC";
+        $sStmt = sqlsrv_query($conn, $sampleSql);
+        $result['attachment_sample'] = [];
+        if ($sStmt) { while ($s = sqlsrv_fetch_array($sStmt, SQLSRV_FETCH_ASSOC)) { $result['attachment_sample'][] = $s; } sqlsrv_free_stmt($sStmt); }
+
+        $countDoc = "SELECT COUNT(*) AS cnt FROM [CUST_DOC]";
+        $cStmt2 = sqlsrv_query($conn, $countDoc);
+        if ($cStmt2) { $cr2 = sqlsrv_fetch_array($cStmt2, SQLSRV_FETCH_ASSOC); $result['cust_doc_count'] = $cr2['cnt']; sqlsrv_free_stmt($cStmt2); }
+
+        $sampleDoc = "SELECT TOP 3 case_num, cust_num, contract_num, doc_type, CAST(LINK_PHOTO AS NVARCHAR(500)) AS photo_xml FROM [CUST_DOC] WHERE LINK_PHOTO IS NOT NULL";
+        $sStmt2 = sqlsrv_query($conn, $sampleDoc);
+        $result['cust_doc_sample'] = [];
+        if ($sStmt2) { while ($s2 = sqlsrv_fetch_array($sStmt2, SQLSRV_FETCH_ASSOC)) { $result['cust_doc_sample'][] = $s2; } sqlsrv_free_stmt($sStmt2); }
+
+        $mcCols = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='main_cust' ORDER BY ORDINAL_POSITION";
+        $mcStmt = sqlsrv_query($conn, $mcCols);
+        $result['main_cust_columns'] = [];
+        if ($mcStmt) { while ($mc = sqlsrv_fetch_array($mcStmt, SQLSRV_FETCH_ASSOC)) { $result['main_cust_columns'][] = $mc['COLUMN_NAME'] . '(' . $mc['DATA_TYPE'] . ')'; } sqlsrv_free_stmt($mcStmt); }
+
         echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         break;
     default:
@@ -125,10 +212,16 @@ exit;
 function formatDate($val) {
     if ($val === null) return null;
     if ($val instanceof DateTimeInterface) {
-        return $val->format('Y-m-d H:i:s');
+        return $val->format('Y-m-d h:i A');
     }
     $str = trim((string)$val);
-    return $str !== '' ? $str : null;
+    if ($str === '') return null;
+    try {
+        $dt = new DateTime($str);
+        return $dt->format('Y-m-d h:i A');
+    } catch (Exception $e) {
+        return $str;
+    }
 }
 
 function clientsBaseQuery($topClause, $whereClause) {
@@ -213,7 +306,7 @@ function handleSearch($conn, $search, $isBulk) {
         $sql = clientsBaseQuery('', '');
     } else {
         $words = preg_split('/\s+/u', trim($search));
-        $words = array_filter($words, fn($w) => mb_strlen($w) > 0);
+        $words = array_filter($words, function($w) { return mb_strlen($w) > 0; });
 
         if (count($words) > 1) {
             $nameConditions = [];
@@ -390,65 +483,122 @@ function handleParties($conn) {
 function handleAttachments($conn) {
     header('Content-Type: text/html; charset=UTF-8');
 
-    $clientId = (int)($_GET['client'] ?? 0);
-    if ($clientId === 0) {
+    $contractNum = (int)($_GET['client'] ?? 0);
+    if ($contractNum === 0) {
         echo '<p style="text-align:center;color:#999;">لا توجد مرفقات</p>';
         return;
     }
 
-    $exts     = ['jpg','jpeg','png','gif','bmp','webp','pdf','tif','tiff'];
-    $found    = [];
-    $baseHost = 'https://bseel.com';
-    $wwwDir   = dirname(__DIR__);
-
-    $searchDirs = [
-        __DIR__ . '/uploads/' . $clientId            => $baseHost . '/uploads/' . $clientId,
-        __DIR__ . '/uploads/contracts/' . $clientId   => $baseHost . '/uploads/contracts/' . $clientId,
-        __DIR__ . '/uploads/clients/' . $clientId     => $baseHost . '/uploads/clients/' . $clientId,
-        $wwwDir . '/doc_photos/' . $clientId          => $baseHost . '/../doc_photos/' . $clientId,
-        __DIR__ . '/doc_photos/' . $clientId          => $baseHost . '/doc_photos/' . $clientId,
-        __DIR__ . '/images/' . $clientId              => $baseHost . '/images/' . $clientId,
-        __DIR__ . '/files/' . $clientId               => $baseHost . '/files/' . $clientId,
-    ];
-
-    foreach ($searchDirs as $dir => $urlBase) {
-        if (!is_dir($dir)) continue;
-        $iterator = new DirectoryIterator($dir);
-        foreach ($iterator as $file) {
-            if ($file->isDot() || !$file->isFile()) continue;
-            $ext = strtolower($file->getExtension());
-            if (in_array($ext, $exts, true)) {
-                $found[] = [
-                    'name' => $file->getFilename(),
-                    'ext'  => $ext,
-                    'url'  => $urlBase . '/' . rawurlencode($file->getFilename()),
-                ];
+    $custStmt = sqlsrv_query($conn,
+        "SELECT num_cust, id_image_front, id_image_back, customer_photo FROM main_cust WHERE contract_num = ?",
+        [$contractNum]);
+    $numCust = null;
+    $inlineImages = [];
+    if ($custStmt) {
+        $custRow = sqlsrv_fetch_array($custStmt, SQLSRV_FETCH_ASSOC);
+        if ($custRow) {
+            $numCust = $custRow['num_cust'];
+            foreach (['id_image_front' => 'صورة الهوية - أمام', 'id_image_back' => 'صورة الهوية - خلف', 'customer_photo' => 'صورة العميل'] as $col => $label) {
+                $val = trim($custRow[$col] ?? '');
+                if ($val !== '') $inlineImages[] = ['label' => $label, 'path' => $val];
             }
         }
+        sqlsrv_free_stmt($custStmt);
     }
 
-    if (empty($found)) {
+    if ($numCust === null) {
         echo '<p style="text-align:center;color:#999;padding:20px;">لا توجد مرفقات لهذا العميل</p>';
         return;
     }
 
-    echo '<div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:10px;">';
-    foreach ($found as $f) {
-        $url  = htmlspecialchars($f['url']);
-        $name = htmlspecialchars($f['name']);
-        if ($f['ext'] === 'pdf') {
-            echo "<a href=\"{$url}\" target=\"_blank\" "
-               . "style=\"display:inline-flex;align-items:center;gap:6px;padding:10px 16px;"
-               . "background:#2c3e50;color:#ecf0f1;border-radius:8px;text-decoration:none;\">"
-               . "<i class=\"fa fa-file-pdf\"></i> {$name}</a>";
-        } else {
-            echo "<a href=\"{$url}\" target=\"_blank\">"
-               . "<img src=\"{$url}\" "
-               . "style=\"max-width:280px;max-height:200px;border-radius:8px;"
-               . "border:1px solid #ddd;object-fit:cover;\" alt=\"{$name}\" />"
-               . "</a>";
+    $found = [];
+
+    $attSql = "SELECT [file], type_file, update_date FROM [attachment ] WHERE cust_num = ? OR cont_num = ?";
+    $attStmt = sqlsrv_query($conn, $attSql, [$numCust, $contractNum]);
+    if ($attStmt) {
+        while ($row = sqlsrv_fetch_array($attStmt, SQLSRV_FETCH_ASSOC)) {
+            $fileName = trim($row['file'] ?? '');
+            if ($fileName === '') continue;
+            $typeFile = trim($row['type_file'] ?? '');
+            $date = ($row['update_date'] instanceof DateTime) ? $row['update_date']->format('Y-m-d') : '';
+            $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            $found[] = ['name' => $fileName, 'type' => $typeFile, 'date' => $date, 'ext' => $ext, 'source' => 'file'];
         }
+        sqlsrv_free_stmt($attStmt);
     }
+
+    $docSql = "SELECT doc_type, CAST(LINK_PHOTO AS NVARCHAR(MAX)) AS photo_link, date_of_satus FROM [CUST_DOC] WHERE cust_num = ? OR contract_num = ?";
+    $docStmt = sqlsrv_query($conn, $docSql, [$numCust, $contractNum]);
+    if ($docStmt) {
+        while ($row = sqlsrv_fetch_array($docStmt, SQLSRV_FETCH_ASSOC)) {
+            $link = trim($row['photo_link'] ?? '');
+            if ($link === '') continue;
+            $docType = trim($row['doc_type'] ?? '');
+            $date = ($row['date_of_satus'] instanceof DateTime) ? $row['date_of_satus']->format('Y-m-d') : '';
+            $found[] = ['name' => $link, 'type' => $docType, 'date' => $date, 'ext' => 'link', 'source' => 'gdrive'];
+        }
+        sqlsrv_free_stmt($docStmt);
+    }
+
+    if (empty($found) && empty($inlineImages)) {
+        echo '<p style="text-align:center;color:#999;padding:20px;">لا توجد مرفقات لهذا العميل</p>';
+        return;
+    }
+
+    echo '<div style="padding:10px;">';
+
+    $uploadsBase = 'https://bseel.com/admin/uploads/';
+
+    if (!empty($inlineImages)) {
+        echo '<h6 style="color:#2c3e50;margin-bottom:8px;">صور العميل</h6>';
+        echo '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:15px;">';
+        foreach ($inlineImages as $img) {
+            $label = htmlspecialchars($img['label']);
+            $path = $img['path'];
+            $isUrl = (strpos($path, 'http') === 0);
+            $url = $isUrl ? $path : $uploadsBase . rawurlencode($path);
+            $urlSafe = htmlspecialchars($url);
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+            $isImage = in_array($ext, ['jpg','jpeg','png','gif','bmp','webp']);
+            if ($isImage) {
+                echo "<div style='text-align:center'><a href=\"{$urlSafe}\" target=\"_blank\">"
+                   . "<img src=\"{$urlSafe}\" style=\"max-width:200px;max-height:150px;border-radius:8px;border:1px solid #ddd;object-fit:cover;\" alt=\"{$label}\" onerror=\"this.parentElement.innerHTML='<span style=padding:20px;display:block;color:#999>{$label}</span>'\" />"
+                   . "</a><div style='font-size:12px;color:#666;margin-top:4px'>{$label}</div></div>";
+            } else {
+                echo "<div style='text-align:center'><a href=\"{$urlSafe}\" target=\"_blank\" style='display:inline-flex;align-items:center;gap:6px;padding:10px 16px;background:#2c3e50;color:#ecf0f1;border-radius:8px;text-decoration:none;'>"
+                   . "<i class='fa fa-file'></i> {$label}</a></div>";
+            }
+        }
+        echo '</div>';
+    }
+
+    if (!empty($found)) {
+        echo '<h6 style="color:#2c3e50;margin-bottom:8px;">المرفقات والمستندات (' . count($found) . ')</h6>';
+        echo '<table class="table table-hover table-bordered table-striped" style="font-size:13px;">';
+        echo '<thead><tr><th>#</th><th>النوع</th><th>الملف</th><th>التاريخ</th></tr></thead><tbody>';
+        $n = 0;
+        foreach ($found as $f) {
+            $n++;
+            $type = htmlspecialchars($f['type']);
+            $date = htmlspecialchars($f['date']);
+            if ($f['source'] === 'gdrive') {
+                $url = htmlspecialchars($f['name']);
+                $fileCell = "<a href=\"{$url}\" target=\"_blank\" style=\"color:#1a73e8;\">فتح المستند <i class='fa fa-external-link'></i></a>";
+            } else {
+                $name = htmlspecialchars($f['name']);
+                $fileUrl = htmlspecialchars($uploadsBase . rawurlencode($f['name']));
+                $isImg = in_array($f['ext'], ['jpg','jpeg','png','gif','bmp','webp']);
+                if ($isImg) {
+                    $fileCell = "<a href=\"{$fileUrl}\" target=\"_blank\" style=\"color:#1a73e8;\">{$name} <i class='fa fa-image'></i></a>";
+                } else {
+                    $fileCell = "<a href=\"{$fileUrl}\" target=\"_blank\" style=\"color:#1a73e8;\">{$name} <i class='fa fa-download'></i></a>";
+                }
+            }
+            echo "<tr><td>{$n}</td><td>{$type}</td><td>{$fileCell}</td><td>{$date}</td></tr>";
+        }
+        echo '</tbody></table>';
+    }
+
     echo '</div>';
 }
 
@@ -466,9 +616,27 @@ function handleJobs($conn, $search) {
     }
 
     $pattern = '%' . $search . '%';
-    $sql = clientsBaseQuery('TOP 50',
-        "WHERE m.job LIKE ?"
-    );
+
+    $sql = "
+        SELECT TOP 50
+            w.[المعرف]   AS id,
+            w.job         AS name,
+            w.work_phone,
+            w.work_phone2,
+            w.work_phone3,
+            CAST(w.address_work  AS NVARCHAR(MAX)) AS address_work,
+            w.[e-mail]    AS email,
+            CAST(w.website       AS NVARCHAR(MAX)) AS website,
+            CAST(w.location      AS NVARCHAR(MAX)) AS location,
+            w.free_days,
+            w.time_work,
+            CAST(w.notes         AS NVARCHAR(MAX)) AS notes,
+            CAST(w.type_of_work  AS NVARCHAR(MAX)) AS type_of_work,
+            (SELECT COUNT(*) FROM main_cust mc WHERE mc.job = w.job) AS customers_count
+        FROM [work] w
+        WHERE w.job LIKE ?
+        ORDER BY w.[المعرف]
+    ";
 
     $stmt = sqlsrv_query($conn, $sql, [$pattern]);
     if ($stmt === false) {
@@ -476,17 +644,38 @@ function handleJobs($conn, $search) {
         return;
     }
 
-    $seen = [];
     $data = [];
     while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-        $r = buildClientRow($row);
-        $workName = trim($r['work'] ?? '');
-        if ($workName === '' || isset($seen[$workName])) continue;
-        $seen[$workName] = true;
-        $data[] = [
-            'id'   => $r['id'],
-            'name' => $workName,
+        $name = trim($row['name'] ?? '');
+        if ($name === '') continue;
+
+        $item = [
+            'id'              => (int)$row['id'],
+            'name'            => $name,
+            'customers_count' => (int)($row['customers_count'] ?? 0),
+            'type'            => trim($row['type_of_work'] ?? ''),
+            'status'          => 1,
+            'address'         => trim($row['address_work'] ?? ''),
+            'email'           => trim($row['email'] ?? ''),
+            'website'         => trim($row['website'] ?? ''),
+            'notes'           => trim($row['notes'] ?? ''),
         ];
+
+        $phones = [];
+        if (!empty($row['work_phone']))  $phones[] = ['phone' => (string)$row['work_phone'],  'type' => 'رئيسي'];
+        if (!empty($row['work_phone2'])) $phones[] = ['phone' => (string)$row['work_phone2'], 'type' => 'ثانوي'];
+        if (!empty($row['work_phone3'])) $phones[] = ['phone' => (string)$row['work_phone3'], 'type' => 'ثالث'];
+        $item['phones'] = $phones;
+
+        $loc = trim($row['location'] ?? '');
+        if ($loc !== '') $item['map_url'] = $loc;
+
+        if (!empty($row['time_work']))  $item['working_hours_text'] = trim($row['time_work']);
+        if (!empty($row['free_days']))  $item['free_days']          = trim($row['free_days']);
+
+        $item['working_hours'] = [];
+
+        $data[] = $item;
     }
     sqlsrv_free_stmt($stmt);
 

@@ -10,7 +10,7 @@ $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['username'])) {
     if (!csrf_verify()) {
-        $error = '<div class="alert alert-danger" role="alert">' . _e('Invalid request, please try again') . '</div>';
+        $error = '<div class="alert alert-danger" role="alert">' . _e('طلب غير صالح، يرجى المحاولة مرة أخرى') . '</div>';
     } else {
         $result = auth_login($_POST['username'], $_POST['password']);
         if ($result) {
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['username'])) {
             header('Location: /admin');
             exit;
         } else {
-            $error = '<div class="alert alert-danger" role="alert">' . _e('Username or Password is incorrect') . '!</div>';
+            $error = '<div class="alert alert-danger" role="alert">' . _e('اسم المستخدم أو كلمة المرور غير صحيحة') . '!</div>';
         }
     }
 }
@@ -31,7 +31,7 @@ $lang = $_COOKIE['language'] ?? 'ar';
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?=_e('Fahras')?> - <?=_e('Login')?></title>
+    <title><?=_e('فهرس')?> - <?=_e('Login')?></title>
     <?php if ($lang == 'ar') { ?>
     <link rel="stylesheet" href="https://cdn.rtlcss.com/bootstrap/3.3.7/css/bootstrap.min.css"
           integrity="sha384-cSfiDrYfMj9eYCidq//oGXEkMc0vuTxHXizrMOFAaPsLt1zoCUVnSsURN+nef1lj"
@@ -57,15 +57,15 @@ $lang = $_COOKIE['language'] ?? 'ar';
                 <img src="img/fahras-logo.png" alt="Fahras" style="width:42px;height:42px;border-radius:8px;" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'fa fa-fingerprint\' style=\'font-size:28px;color:#63b3ed;\'></i>';">
             </div>
         </div>
-        <h2 class="form-signin-heading"><?=_e('Please Login')?></h2>
+        <h2 class="form-signin-heading"><?=_e('يرجى تسجيل الدخول')?></h2>
         <?= $error ?>
-        <label for="inputusername" class="sr-only"><?=_e('Username')?></label>
-        <input name="username" type="text" id="inputusername" class="form-control" placeholder="<?=_e('Username')?>" required autofocus>
-        <label for="inputPassword" class="sr-only"><?=_e('Password')?></label>
-        <input name="password" type="password" id="inputPassword" class="form-control" placeholder="<?=_e('Password')?>" required>
+        <label for="inputusername" class="sr-only"><?=_e('اسم المستخدم')?></label>
+        <input name="username" type="text" id="inputusername" class="form-control" placeholder="<?=_e('اسم المستخدم')?>" required autofocus>
+        <label for="inputPassword" class="sr-only"><?=_e('كلمة المرور')?></label>
+        <input name="password" type="password" id="inputPassword" class="form-control" placeholder="<?=_e('كلمة المرور')?>" required>
         <div class="checkbox">
           <label>
-            <input type="checkbox" value="remember-me"> <?=_e('Remember me')?>
+            <input type="checkbox" value="remember-me"> <?=_e('تذكرني')?>
           </label>
         </div>
         <button class="btn btn-lg btn-primary btn-block" type="submit"><?=_e('Login')?></button>

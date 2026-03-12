@@ -1,6 +1,6 @@
 <?php
 $token = 'mojeer';
-$page_title = 'Reports';
+$page_title = 'التقارير';
 include 'header.php';
 
 require_once __DIR__ . '/../includes/violation_engine.php';
@@ -205,21 +205,21 @@ $chartData = $chartStmt->fetchAll();
 <div class="report-page">
     <div class="container">
         <div class="report-header">
-            <h1><i class="fa fa-chart-bar"></i> <?= _e('Monthly Report') ?></h1>
-            <p><?= _e('Financial summary of violations by account') ?></p>
+            <h1><i class="fa fa-chart-bar"></i> <?= _e('التقرير الشهري') ?></h1>
+            <p><?= _e('ملخص مالي للمخالفات حسب الشركة') ?></p>
         </div>
 
         <form method="get" class="report-filter">
             <input type="month" name="month" value="<?= htmlspecialchars($selectedMonth) ?>">
-            <button type="submit" class="btn-view"><i class="fa fa-search"></i> <?= _e('View') ?></button>
+            <button type="submit" class="btn-view"><i class="fa fa-search"></i> <?= _e('عرض') ?></button>
         </form>
 
         <div class="report-grid">
             <div class="report-card">
-                <div class="report-card-header danger"><i class="fa fa-arrow-up"></i> <?= _e('Violating Accounts') ?> (<?= _e('Owed') ?>)</div>
+                <div class="report-card-header danger"><i class="fa fa-arrow-up"></i> <?= _e('الشركات المخالفة') ?> (<?= _e('مدين') ?>)</div>
                 <table>
                     <thead>
-                        <tr><th><?= _e('Account') ?></th><th><?= _e('Violations') ?></th><th><?= _e('Total Fine') ?></th><th><?= _e('Paid') ?></th><th><?= _e('Remaining') ?></th></tr>
+                        <tr><th><?= _e('الشركة') ?></th><th><?= _e('المخالفات') ?></th><th><?= _e('إجمالي الغرامة') ?></th><th><?= _e('المدفوع') ?></th><th><?= _e('المتبقي') ?></th></tr>
                     </thead>
                     <tbody>
                     <?php
@@ -231,36 +231,36 @@ $chartData = $chartStmt->fetchAll();
                     <tr>
                         <td><b><?= htmlspecialchars($r['violating_account']) ?></b></td>
                         <td><?= $count ?></td>
-                        <td><?= number_format($r['total_fine'], 2) ?> <?= _e('JOD') ?></td>
+                        <td><?= number_format($r['total_fine'], 2) ?> <?= _e('دينار') ?></td>
                         <td class="text-success"><?= number_format($r['paid_amount'], 2) ?></td>
                         <td class="text-danger"><b><?= number_format($r['unpaid_amount'], 2) ?></b></td>
                     </tr>
                     <?php } ?>
                     <?php if (empty($report)) { ?>
-                    <tr class="empty-row"><td colspan="5"><?= _e('No violations') ?></td></tr>
+                    <tr class="empty-row"><td colspan="5"><?= _e('لا مخالفات') ?></td></tr>
                     <?php } else { ?>
-                    <tr class="total-row"><td colspan="4"><b><?= _e('Total Unpaid') ?></b></td><td class="text-danger"><b><?= number_format($grandTotal, 2) ?> <?= _e('JOD') ?></b></td></tr>
+                    <tr class="total-row"><td colspan="4"><b><?= _e('إجمالي غير المدفوع') ?></b></td><td class="text-danger"><b><?= number_format($grandTotal, 2) ?> <?= _e('دينار') ?></b></td></tr>
                     <?php } ?>
                     </tbody>
                 </table>
             </div>
 
             <div class="report-card">
-                <div class="report-card-header success"><i class="fa fa-arrow-down"></i> <?= _e('Entitled Accounts') ?> (<?= _e('Earned') ?>)</div>
+                <div class="report-card-header success"><i class="fa fa-arrow-down"></i> <?= _e('الشركات المستحقة') ?> (<?= _e('مستحق') ?>)</div>
                 <table>
                     <thead>
-                        <tr><th><?= _e('Account') ?></th><th><?= _e('Violations For') ?></th><th><?= _e('Total Earned') ?></th></tr>
+                        <tr><th><?= _e('الشركة') ?></th><th><?= _e('المخالفات لصالح') ?></th><th><?= _e('إجمالي المستحق') ?></th></tr>
                     </thead>
                     <tbody>
                     <?php foreach ($entitledReport as $e) { ?>
                     <tr>
                         <td><b><?= htmlspecialchars($e['entitled_account']) ?></b></td>
                         <td><?= $e['violation_count'] ?></td>
-                        <td class="text-success"><b><?= number_format($e['total_earned'], 2) ?> <?= _e('JOD') ?></b></td>
+                        <td class="text-success"><b><?= number_format($e['total_earned'], 2) ?> <?= _e('دينار') ?></b></td>
                     </tr>
                     <?php } ?>
                     <?php if (empty($entitledReport)) { ?>
-                    <tr class="empty-row"><td colspan="3"><?= _e('No violations') ?></td></tr>
+                    <tr class="empty-row"><td colspan="3"><?= _e('لا مخالفات') ?></td></tr>
                     <?php } ?>
                     </tbody>
                 </table>
@@ -268,16 +268,16 @@ $chartData = $chartStmt->fetchAll();
         </div>
 
         <div class="chart-card">
-            <div class="chart-card-header"><i class="fa fa-chart-line"></i> <?= _e('Violations Trend (12 Months)') ?></div>
+            <div class="chart-card-header"><i class="fa fa-chart-line"></i> <?= _e('اتجاه المخالفات (12 شهراً)') ?></div>
             <div class="chart-card-body">
                 <canvas id="violationsChart" height="80"></canvas>
             </div>
         </div>
 
         <div class="report-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('Made with') ?> <i class="fa fa-heart"></i> <?= _e('by MÜJEER') ?></a>
+            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('صُنع بـ') ?> <i class="fa fa-heart"></i> <?= _e('بواسطة MÜJEER') ?></a>
             &nbsp;&middot;&nbsp;
-            &copy; <?= _e('Fahras') ?> <?= date('Y') ?>
+            &copy; <?= _e('فهرس') ?> <?= date('Y') ?>
         </div>
     </div>
 </div>
@@ -291,7 +291,7 @@ new Chart(ctx, {
     data: {
         labels: [<?php foreach ($chartData as $cd) { echo '"' . $cd['violation_month'] . '",'; } ?>],
         datasets: [{
-            label: '<?= _e('Violations') ?>',
+            label: '<?= _e('المخالفات') ?>',
             data: [<?php foreach ($chartData as $cd) { echo $cd['cnt'] . ','; } ?>],
             backgroundColor: 'rgba(99, 179, 237, 0.3)',
             borderColor: 'rgba(99, 179, 237, 0.8)',

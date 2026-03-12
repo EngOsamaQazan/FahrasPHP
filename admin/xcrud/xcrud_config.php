@@ -3,8 +3,8 @@ class Xcrud_config
 {
     // default connection
     public static $dbname = 'fahras_db'; // Your database name
-    public static $dbuser = 'root'; // Your database username
-    public static $dbpass = ''; // // Your database password
+    public static $dbuser = 'osama'; // Your database username
+    public static $dbpass = 'OsamaDB123'; // Your database password
     public static $dbhost = 'localhost'; // Your database host, 'localhost' is default.
     
     
@@ -118,9 +118,9 @@ class Xcrud_config
     // date
     public static $date_first_day = 1; // 0 - Sunday, 1 - Monday etc. Uses in datepicker and search ranges
     public static $date_format = 'dd.mm.yy'; // jqueryui date format
-    public static $time_format = 'HH:mm:ss'; // jqueryui time format
+    public static $time_format = 'hh:mm TT'; // jqueryui time format (12h)
     public static $php_date_format = 'd.m.Y'; // php date format
-    public static $php_time_format = 'H:i:s'; // php time format
+    public static $php_time_format = 'h:i A'; // php time format (12h)
     
     
     // search

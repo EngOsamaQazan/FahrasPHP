@@ -4,18 +4,22 @@ Thumbs.db
 
 # Temp/debug scripts
 _*.py
+_*.php
 _*.txt
+_*.json
 temp_*.html
 __MACOSX/
 
 # IDE
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 
 # Database dumps (contain sensitive data)
-fahras_db.sql
+*.sql
+!includes/migrations/*.sql
 
-# RBAC migration SQL (already applied)
-rbac_migration.sql
+# Deploy scripts
+_deploy*
