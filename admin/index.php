@@ -436,13 +436,20 @@ if (user_can('clients', 'view')) {
 .group-banner {
     padding: 14px 18px;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 .group-banner.can-sell   { background: rgba(72,187,120,0.12); border-bottom: 2px solid rgba(72,187,120,0.3); }
 .group-banner.cannot-sell{ background: rgba(245,101,101,0.12); border-bottom: 2px solid rgba(245,101,101,0.3); }
 .group-banner.contact    { background: rgba(236,201,75,0.12);  border-bottom: 2px solid rgba(236,201,75,0.3); }
 
+.group-banner .banner-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
 .group-banner .banner-icon {
     width: 34px;
     height: 34px;
@@ -465,6 +472,68 @@ if (user_can('clients', 'view')) {
 .group-banner.can-sell .banner-text    { color: #68d391; }
 .group-banner.cannot-sell .banner-text { color: #fc8181; }
 .group-banner.contact .banner-text     { color: #f6e05e; }
+
+.banner-summary {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+}
+.company-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 12px;
+    flex-wrap: wrap;
+}
+.company-chip .chip-name {
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    min-width: 50px;
+    text-align: center;
+}
+.chip-name.zajal  { background: rgba(59,130,246,0.2);  color: #93c5fd; }
+.chip-name.jadal  { background: rgba(34,197,94,0.2);   color: #86efac; }
+.chip-name.namaa  { background: rgba(234,179,8,0.2);   color: #fde68a; }
+.chip-name.bseel  { background: rgba(236,72,153,0.2);  color: #f9a8d4; }
+.chip-name.local  { background: rgba(148,163,184,0.15); color: #94a3b8; }
+
+.company-chip .chip-detail {
+    color: rgba(255,255,255,0.6);
+}
+.company-chip .chip-detail span {
+    color: rgba(255,255,255,0.9);
+    font-weight: 600;
+}
+.company-chip .chip-remaining-high span { color: #fc8181; font-weight: 700; }
+.company-chip .chip-remaining-low span  { color: #68d391; }
+
+.chip-status-tag {
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.chip-status-tag.blocker   { background: rgba(245,101,101,0.2); color: #fc8181; }
+.chip-status-tag.clear     { background: rgba(72,187,120,0.15); color: #68d391; }
+.chip-status-tag.finished  { background: rgba(148,163,184,0.15); color: #94a3b8; }
+.chip-status-tag.unknown   { background: rgba(236,201,75,0.15); color: #f6e05e; }
+
+.company-chip .chip-phone {
+    margin-right: auto;
+    direction: ltr;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.company-chip .chip-phone:hover { color: #fff; }
 
 .group-banner .banner-phone {
     font-size: 12px;
@@ -565,6 +634,16 @@ if (user_can('clients', 'view')) {
     color: rgba(255,255,255,0.8);
     font-weight: 600;
     margin-right: 2px;
+}
+.contract-remaining {
+    font-weight: 700;
+    font-size: 13px;
+}
+.contract-remaining.remaining-high span {
+    color: #ff6b6b;
+}
+.contract-remaining.remaining-low span {
+    color: #51cf66;
 }
 
 .contract-actions {
@@ -867,25 +946,92 @@ if (!empty($_GET['search'])) {
 
         echo '<div class="group-card">';
         echo '<div class="group-banner ' . $bannerClass . '">';
+        echo '<div class="banner-top">';
         echo '<div class="banner-icon">' . $recIcon . '</div>';
         echo '<div class="banner-text">' . htmlspecialchars($group['message'], ENT_QUOTES, 'UTF-8') . '</div>';
+        echo '</div>';
 
-        $bannerPhones = [];
+        $companySummary = [];
         foreach ($group['results'] as $_ent) {
             $accName = resolveAccountName($_ent);
-            $accPhone = getAccountPhone($_ent);
-            if (!empty($accPhone) && !isset($bannerPhones[$accName])) {
-                $bannerPhones[$accName] = $accPhone;
+            if (isExcludedAccount($accName)) continue;
+            if (!isset($companySummary[$accName])) {
+                $companySummary[$accName] = [
+                    'remaining' => null,
+                    'status' => '',
+                    'phone' => getAccountPhone($_ent),
+                    'source' => $_ent['_source'] ?? 'local',
+                ];
+            }
+            $entRemaining = $_ent['remaining_amount'] ?? null;
+            $entStatus = strtolower(trim($_ent['status'] ?? ''));
+            if ($entRemaining !== null) {
+                $prev = $companySummary[$accName]['remaining'];
+                if ($prev === null || (float)$entRemaining > (float)$prev) {
+                    $companySummary[$accName]['remaining'] = $entRemaining;
+                    $companySummary[$accName]['status'] = $_ent['status'] ?? '';
+                }
+            }
+            if (empty($companySummary[$accName]['status'])) {
+                $companySummary[$accName]['status'] = $_ent['status'] ?? '';
+            }
+            if (empty($companySummary[$accName]['phone'])) {
+                $companySummary[$accName]['phone'] = getAccountPhone($_ent);
             }
         }
-        if (!empty($bannerPhones)) {
-            echo '<div class="banner-phones" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">';
-            foreach ($bannerPhones as $accLabel => $accPh) {
-                $phSafe = htmlspecialchars($accPh, ENT_QUOTES, 'UTF-8');
-                $lblSafe = htmlspecialchars($accLabel, ENT_QUOTES, 'UTF-8');
-                $telLink = 'tel:' . preg_replace('/[^\d+]/', '', $accPh);
-                echo '<a href="' . $telLink . '" class="banner-phone" style="text-decoration:none;">'
-                   . '<i class="fa fa-phone"></i> ' . $lblSafe . ': ' . $phSafe . '</a>';
+
+        if (!empty($companySummary)) {
+            echo '<div class="banner-summary">';
+            foreach ($companySummary as $compName => $compData) {
+                $src = $compData['source'];
+                $chipBadge = 'local';
+                if ($src === 'zajal' || $compName === 'زجل') $chipBadge = 'zajal';
+                elseif ($src === 'jadal' || $compName === 'جدل') $chipBadge = 'jadal';
+                elseif ($src === 'namaa' || $compName === 'نماء') $chipBadge = 'namaa';
+                elseif ($src === 'bseel' || $compName === 'بسيل' || $compName === 'عمار') $chipBadge = 'bseel';
+
+                $rem = $compData['remaining'];
+                $rawStatus = strtolower(trim($compData['status']));
+                $isFinished = in_array($rawStatus, ['منتهي', 'finished', 'completed', 'closed']);
+                $isCanceled = in_array($rawStatus, ['ملغي', 'canceled', 'cancelled']);
+                $isBlocker = ($rem !== null && (float)$rem >= 150 && !$isFinished && !$isCanceled);
+                $isClear = ($rem !== null && (float)$rem < 150 && !$isFinished && !$isCanceled);
+
+                if ($isBlocker) {
+                    $tagClass = 'blocker';
+                    $tagText = _e('مانع');
+                    $tagIcon = '<i class="fa fa-ban"></i> ';
+                } elseif ($isFinished || $isCanceled) {
+                    $tagClass = 'finished';
+                    $tagText = $isFinished ? _e('منتهي') : _e('ملغي');
+                    $tagIcon = '<i class="fa fa-check"></i> ';
+                } elseif ($isClear) {
+                    $tagClass = 'clear';
+                    $tagText = _e('تحت الحد');
+                    $tagIcon = '<i class="fa fa-check-circle"></i> ';
+                } else {
+                    $tagClass = 'unknown';
+                    $tagText = _e('يحتاج تحقق');
+                    $tagIcon = '<i class="fa fa-question-circle"></i> ';
+                }
+
+                $remClass = $isBlocker ? 'chip-remaining-high' : 'chip-remaining-low';
+
+                echo '<div class="company-chip">';
+                echo '<span class="chip-name ' . $chipBadge . '">' . htmlspecialchars($compName, ENT_QUOTES, 'UTF-8') . '</span>';
+                if ($rem !== null) {
+                    echo '<span class="chip-detail ' . $remClass . '">' . _e('المتبقي') . ': <span>' . number_format((float)$rem, 2) . '</span></span>';
+                }
+                if (!empty($compData['status'])) {
+                    echo '<span class="chip-detail">' . _e('الحالة') . ': <span>' . htmlspecialchars($compData['status'], ENT_QUOTES, 'UTF-8') . '</span></span>';
+                }
+                echo '<span class="chip-status-tag ' . $tagClass . '">' . $tagIcon . $tagText . '</span>';
+                if (!empty($compData['phone'])) {
+                    $phSafe = htmlspecialchars($compData['phone'], ENT_QUOTES, 'UTF-8');
+                    $telLink = 'tel:' . preg_replace('/[^\d+]/', '', $compData['phone']);
+                    echo '<a href="' . $telLink . '" class="chip-phone"><i class="fa fa-phone"></i> ' . $phSafe . '</a>';
+                }
+                echo '</div>';
             }
             echo '</div>';
         }
@@ -984,6 +1130,11 @@ if (!empty($_GET['search'])) {
             }
             if (!empty($key['court_status'])) {
                 echo '<div class="contract-detail">' . _e('حالة المحكمة') . ': <span>' . htmlspecialchars((string)$key['court_status'], ENT_QUOTES, 'UTF-8') . '</span></div>';
+            }
+            if ($key['remaining_amount'] !== null) {
+                $remAmt = number_format((float)$key['remaining_amount'], 2);
+                $remClass = (float)$key['remaining_amount'] >= 150 ? 'remaining-high' : 'remaining-low';
+                echo '<div class="contract-detail contract-remaining ' . $remClass . '">' . _e('المتبقي') . ': <span>' . $remAmt . '</span></div>';
             }
             echo '</div>';
 
