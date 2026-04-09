@@ -3,6 +3,7 @@
 	$token = 'mojeer';
 	include 'header.php';
 	require_permission('clients', 'view');
+	require_once __DIR__ . '/../includes/migrations/006_add_external_accounts.php';
 
 	$ar_labels = [
 		'id' => 'رقم',

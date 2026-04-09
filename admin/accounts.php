@@ -7,6 +7,7 @@
 	// Run migrations if needed
 	require_once __DIR__ . '/../includes/migrations/004_enrich_accounts.php';
 	require_once __DIR__ . '/../includes/migrations/005_seed_accounts.php';
+	require_once __DIR__ . '/../includes/migrations/006_add_external_accounts.php';
 
 	// Stats
 	$totalCompanies = $db->query("SELECT COUNT(*) FROM accounts")->fetchColumn();
