@@ -24,7 +24,7 @@ jobs:
             set -e
 
             REPO_URL="https://${{ secrets.GH_TOKEN }}@github.com/EngOsamaQazan/FahrasPHP.git"
-            SITE_DIR="${{ secrets.SITE_DIR }}"
+            SITE_DIR="/var/www/fahras.aqssat.co"
             BRANCH="main"
 
             echo "=== Deploying FahrasPHP to $SITE_DIR ==="
