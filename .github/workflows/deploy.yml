@@ -44,6 +44,7 @@ jobs:
               git reset --hard "origin/$BRANCH"
             else
               echo "  Pulling latest changes..."
+              git remote set-url origin "$REPO_URL"
               git fetch origin "$BRANCH" --depth 1
               git reset --hard "origin/$BRANCH"
             fi
