@@ -27,6 +27,7 @@ jobs:
 
             echo "=== Deploying FahrasPHP to $SITE_DIR ==="
 
+            git config --global --add safe.directory "$SITE_DIR" 2>/dev/null || true
             cd "$SITE_DIR" || exit 1
 
             if [ ! -d ".git" ]; then
