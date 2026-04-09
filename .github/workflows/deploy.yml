@@ -21,15 +21,13 @@ jobs:
           port: 22
           command_timeout: 3m
           script: |
-            set -e
-
             REPO_URL="https://${{ secrets.GH_TOKEN }}@github.com/EngOsamaQazan/FahrasPHP.git"
             SITE_DIR="/var/www/fahras.aqssat.co"
             BRANCH="main"
 
             echo "=== Deploying FahrasPHP to $SITE_DIR ==="
 
-            cd "$SITE_DIR"
+            cd "$SITE_DIR" || exit 1
 
             if [ ! -d ".git" ]; then
               echo "  First deploy — cloning..."
@@ -44,7 +42,7 @@ jobs:
               git reset --hard "origin/$BRANCH"
             else
               echo "  Pulling latest changes..."
-              git remote set-url origin "$REPO_URL"
+              git remote set-url origin "$REPO_URL" || true
               git fetch origin "$BRANCH" --depth 1
               git reset --hard "origin/$BRANCH"
             fi
