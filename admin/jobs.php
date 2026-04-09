@@ -89,6 +89,7 @@ if (!empty($searchQuery) || !empty($selectedWork)) {
             ['url' => "https://jadal.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=jadal&search={$enc}", 'label' => 'جدل', 'src' => 'jadal'],
             ['url' => "https://jadal.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=erp&search={$enc}", 'label' => 'نماء', 'src' => 'namaa'],
             ['url' => "https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=jobs&search={$enc}", 'label' => 'بسيل', 'src' => 'bseel'],
+            ['url' => "https://watar.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=watar&search={$enc}", 'label' => 'وتر', 'src' => 'watar'],
         ];
         foreach ($apis as $api) {
             $res = fetchJobsApi($api['url'], $api['label']);
@@ -142,8 +143,8 @@ if (!empty($searchQuery) || !empty($selectedWork)) {
 
 $remoteDetail = null;
 if (!empty($selectedSource) && !empty($selectedId)) {
-    $dbMap = ['jadal' => 'jadal', 'namaa' => 'erp'];
-    $labelMap = ['jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل'];
+    $dbMap = ['jadal' => 'jadal', 'namaa' => 'erp', 'watar' => 'watar'];
+    $labelMap = ['jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر'];
 
     if ($selectedSource === 'bseel') {
         $searchTerm = $selectedWork ?: '';
@@ -163,11 +164,13 @@ if (!empty($selectedSource) && !empty($selectedId)) {
         }
     } else {
         $dbName = $dbMap[$selectedSource] ?? '';
+        $hostMap = ['jadal' => 'jadal.aqssat.co', 'namaa' => 'jadal.aqssat.co', 'watar' => 'watar.aqssat.co'];
+        $detailHost = $hostMap[$selectedSource] ?? 'jadal.aqssat.co';
         if ($dbName) {
             $searchTerm = $selectedWork ?: '';
             $words = preg_split('/\s+/u', trim($searchTerm));
             $shortTerm = count($words) > 2 ? implode(' ', array_slice($words, 0, 2)) : $searchTerm;
-            $detailUrl = "https://jadal.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db={$dbName}&search=" . urlencode($shortTerm ?: ' ');
+            $detailUrl = "https://{$detailHost}/fahras/jobs.php?token=b83ba7a49b72&db={$dbName}&search=" . urlencode($shortTerm ?: ' ');
             $res = fetchJobsApi($detailUrl, $labelMap[$selectedSource] ?? $selectedSource);
             if ($res['ok']) {
                 foreach ($res['data'] as $item) {
@@ -334,6 +337,7 @@ if (empty($searchQuery) && empty($selectedWork)) {
 .work-card-source.namaa { background: rgba(234,179,8,0.15); color: #fde68a; }
 .work-card-source.zajal { background: rgba(59,130,246,0.15); color: #93c5fd; }
 .work-card-source.bseel { background: rgba(236,72,153,0.15); color: #f9a8d4; }
+.work-card-source.watar { background: rgba(139,92,246,0.15); color: #c4b5fd; }
 .work-card-source.local { background: rgba(148,163,184,0.1); color: #94a3b8; }
 .work-card-type {
     font-size: 11px;

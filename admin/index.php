@@ -503,6 +503,7 @@ if (user_can('clients', 'view')) {
 .chip-name.jadal  { background: rgba(34,197,94,0.2);   color: #86efac; }
 .chip-name.namaa  { background: rgba(234,179,8,0.2);   color: #fde68a; }
 .chip-name.bseel  { background: rgba(236,72,153,0.2);  color: #f9a8d4; }
+.chip-name.watar  { background: rgba(139,92,246,0.2);  color: #c4b5fd; }
 .chip-name.local  { background: rgba(148,163,184,0.15); color: #94a3b8; }
 
 .company-chip .chip-detail {
@@ -606,6 +607,7 @@ if (user_can('clients', 'view')) {
 .co-badge.jadal  { background: rgba(34,197,94,0.2);   color: #86efac; }
 .co-badge.namaa  { background: rgba(234,179,8,0.2);   color: #fde68a; }
 .co-badge.bseel  { background: rgba(236,72,153,0.2);  color: #f9a8d4; }
+.co-badge.watar  { background: rgba(139,92,246,0.2);  color: #c4b5fd; }
 .co-badge.local  { background: rgba(148,163,184,0.15); color: #94a3b8; }
 
 .contract-name {
@@ -798,6 +800,7 @@ if (!empty($_GET['search'])) {
         'jadal' => ['url' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=jadal&search=' . $searchEncoded, 'label' => 'جدل'],
         'namaa' => ['url' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=erp&search=' . $searchEncoded, 'label' => 'نماء'],
         'bseel' => ['url' => 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&search=' . $searchEncoded, 'label' => 'بسيل'],
+        'watar' => ['url' => 'https://watar.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=watar&search=' . $searchEncoded, 'label' => 'وتر'],
     ];
 
     $remoteUrls = [];
@@ -885,7 +888,7 @@ if (!empty($_GET['search'])) {
     $_failKeys = array_map(fn($e) => $e['label'], $remote_errors);
     $_failLabelsSet = array_flip($_failKeys);
     $_responded = [];
-    foreach (['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل'] as $_rk => $_rl) {
+    foreach (['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر'] as $_rk => $_rl) {
         if (!isset($_failLabelsSet[$_rl])) $_responded[] = $_rk;
     }
     $_failLabels = $_failKeys;
@@ -989,6 +992,7 @@ if (!empty($_GET['search'])) {
                 elseif ($src === 'jadal' || $compName === 'جدل') $chipBadge = 'jadal';
                 elseif ($src === 'namaa' || $compName === 'نماء') $chipBadge = 'namaa';
                 elseif ($src === 'bseel' || $compName === 'بسيل' || $compName === 'عمار') $chipBadge = 'bseel';
+                elseif ($src === 'watar' || $compName === 'وتر') $chipBadge = 'watar';
 
                 $rem = $compData['remaining'];
                 $rawStatus = strtolower(trim($compData['status']));
@@ -1057,6 +1061,7 @@ if (!empty($_GET['search'])) {
             elseif ($source === 'jadal' || $account_name === 'جدل') $badgeClass = 'jadal';
             elseif ($source === 'namaa' || $account_name === 'نماء') $badgeClass = 'namaa';
             elseif ($source === 'bseel' || $account_name === 'بسيل' || $account_name === 'عمار') { $badgeClass = 'bseel'; $account_name = 'بسيل'; }
+            elseif ($source === 'watar' || $account_name === 'وتر') $badgeClass = 'watar';
 
         $account_id = 0;
         $people_link = '';
@@ -1080,6 +1085,10 @@ if (!empty($_GET['search'])) {
                 $people_link = 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=people&client=' . $key['id'];
                 $attachments_link = 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=attachments&client=' . $key['id'];
                 $relations_link = 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=parties&contract=' . $key['id'];
+            } elseif ($account_name === 'وتر' || $source === 'watar') {
+            $attachments_link = 'https://watar.aqssat.co/fahras/client-attachments.php?db=watar&id=' . $key['cid'];
+            $people_link = 'https://watar.aqssat.co/fahras/people.php?token=b83ba7a49b72&db=watar&client=' . $key['cid'];
+            $relations_link = 'https://watar.aqssat.co/fahras/relations.php?token=b83ba7a49b72&db=watar&client=' . $key['cid'];
         } else {
             $attachments_link = '/admin/attachments?client=' . $key['id'];
         }
@@ -1332,8 +1341,8 @@ function captureResults(){
     var _h=now.getHours(),_ap=_h>=12?'PM':'AM';_h=_h%12||12;
     var ts=_rPad(_h)+':'+_rPad(now.getMinutes())+' '+_ap;
 
-    var sn={local:'محلي',zajal:'زجل',jadal:'جدل',namaa:'نماء',bseel:'بسيل'};
-    var remoteSrc=['zajal','jadal','namaa','bseel'];
+    var sn={local:'محلي',zajal:'زجل',jadal:'جدل',namaa:'نماء',bseel:'بسيل',watar:'وتر'};
+    var remoteSrc=['zajal','jadal','namaa','bseel','watar'];
 
     var blockN=0,contactN=0;
     rpt.grp.forEach(function(g){

@@ -14,6 +14,7 @@ $sourceLabels = [
     'jadal' => 'جدل',
     'namaa' => 'نماء',
     'bseel' => 'بسيل',
+    'watar' => 'وتر',
 ];
 
 $localStmt = $db->prepare("
@@ -239,6 +240,7 @@ $periodLabel = $isToday
 .cc-badge.jadal  { background: rgba(34,197,94,0.2);   color: #86efac; }
 .cc-badge.namaa  { background: rgba(234,179,8,0.2);   color: #fde68a; }
 .cc-badge.bseel  { background: rgba(236,72,153,0.2);  color: #f9a8d4; }
+.cc-badge.watar  { background: rgba(139,92,246,0.2);  color: #c4b5fd; }
 
 .company-card .cc-stats {
     display: grid;

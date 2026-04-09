@@ -33,6 +33,7 @@ $sourceLabels = [
     'jadal' => 'جدل',
     'namaa' => 'نماء',
     'bseel' => 'بسيل',
+    'watar' => 'وتر',
 ];
 
 $sourceUrls = [
@@ -40,15 +41,17 @@ $sourceUrls = [
     'jadal' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=jadal&search=',
     'namaa' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=erp&search=',
     'bseel' => 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&search=',
+    'watar' => 'https://watar.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=watar&search=',
 ];
 
 $bulkExportUrls = [
     'jadal' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=jadal&action=bulk_export',
     'namaa' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=erp&action=bulk_export',
     'bseel' => 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=bulk_export',
+    'watar' => 'https://watar.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=watar&action=bulk_export',
 ];
 
-$bulkSources = ['jadal', 'namaa', 'bseel'];
+$bulkSources = ['jadal', 'namaa', 'bseel', 'watar'];
 
 switch ($action) {
 
@@ -376,7 +379,7 @@ switch ($action) {
             $startTime = microtime(true);
             $newViolations = 0;
             $checked = 0;
-            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل'];
+            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر'];
 
             // العميل المحلي أقدم → الشركة الخارجية مخالفة
             $stmt2 = $db->run("
@@ -475,7 +478,7 @@ switch ($action) {
             $startTime = microtime(true);
             $newViolations = 0;
             $checked = 0;
-            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل'];
+            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر'];
 
             $stmt = $db->run("
                 SELECT r1.name, r1.national_id,
