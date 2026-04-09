@@ -1,0 +1,59 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: 22
+          command_timeout: 3m
+          script: |
+            set -e
+
+            REPO_URL="https://${{ secrets.GH_TOKEN }}@github.com/EngOsamaQazan/FahrasPHP.git"
+            SITE_DIR="${{ secrets.SITE_DIR }}"
+            BRANCH="main"
+
+            echo "=== Deploying FahrasPHP to $SITE_DIR ==="
+
+            cd "$SITE_DIR"
+
+            if [ ! -d ".git" ]; then
+              echo "  First deploy — cloning..."
+              cd /tmp
+              git clone --depth 1 --branch "$BRANCH" "$REPO_URL" fahras_temp
+              rsync -a --exclude='.env' fahras_temp/ "$SITE_DIR/"
+              rm -rf /tmp/fahras_temp
+              cd "$SITE_DIR"
+              git init
+              git remote add origin "$REPO_URL"
+              git fetch origin "$BRANCH" --depth 1
+              git reset --hard "origin/$BRANCH"
+            else
+              echo "  Pulling latest changes..."
+              git fetch origin "$BRANCH" --depth 1
+              git reset --hard "origin/$BRANCH"
+            fi
+
+            chown -R www-data:www-data "$SITE_DIR" 2>/dev/null || true
+
+            echo "=== Clearing OPcache ==="
+            PHP_VER=$(php -r "echo PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION;" 2>/dev/null || echo "8.3")
+            systemctl reload "php${PHP_VER}-fpm" 2>/dev/null || true
+            systemctl reload apache2 2>/dev/null || true
+
+            echo ""
+            echo "FahrasPHP deployed successfully!"
