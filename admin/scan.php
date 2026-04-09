@@ -273,7 +273,7 @@ try {
 <script>
 const CSRF = '<?= csrf_token() ?>';
 const LABELS = {
-    zajal: 'زجل', jadal: 'جدل', namaa: 'نماء', bseel: 'بسيل', watar: 'وتر',
+    zajal: 'زجل', jadal: 'جدل', namaa: 'نماء', bseel: 'بسيل', watar: 'وتر', majd: 'المجد',
     syncing: '<?= _e('جاري المزامنة') ?>',
     scanning: '<?= _e('جاري الفحص') ?>',
     done: '<?= _e('اكتمل') ?>',
@@ -408,7 +408,7 @@ async function refreshStats() {
     } catch(e) {}
 }
 
-const BULK_SOURCES = ['jadal', 'namaa', 'watar'];
+const BULK_SOURCES = ['jadal', 'namaa', 'watar', 'majd'];
 
 async function syncSource(source, stepIdx, totalSteps) {
     const label = LABELS[source] || source;
@@ -575,6 +575,7 @@ async function runFullScan() {
         { id: 'zajal', icon: '🔗', name: LABELS.zajal },
         { id: 'bseel', icon: '🔗', name: LABELS.bseel },
         { id: 'watar', icon: '🔗', name: LABELS.watar },
+        { id: 'majd', icon: '🔗', name: LABELS.majd },
         { id: 'scan_local', icon: '🔍', name: LABELS.scanLocal },
         { id: 'scan_remote', icon: '🌐', name: LABELS.scanRemote },
         { id: 'scan_external', icon: '🔄', name: LABELS.scanExternal },
@@ -586,19 +587,19 @@ async function runFullScan() {
     const startTime = Date.now();
     log('═══ ' + LABELS.combinedDone.replace(LABELS.done, '') + ' ═══', 'step');
 
-    const sources = ['jadal', 'namaa', 'zajal', 'bseel', 'watar'];
+    const sources = ['jadal', 'namaa', 'zajal', 'bseel', 'watar', 'majd'];
     let totalSynced = 0, totalUpdated = 0, totalErrors = 0;
 
     for (let i = 0; i < sources.length; i++) {
-        const r = await syncSource(sources[i], i, 8);
+        const r = await syncSource(sources[i], i, 9);
         totalSynced += r.synced;
         totalUpdated += r.updated;
         totalErrors += r.errors;
     }
 
-    const localResult = await scanLocal(5, 8);
-    const remoteResult = await scanRemote(6, 8);
-    const externalResult = await scanExternal(7, 8);
+    const localResult = await scanLocal(6, 9);
+    const remoteResult = await scanRemote(7, 9);
+    const externalResult = await scanExternal(8, 9);
 
     const totalViolations = localResult.violations + remoteResult.violations + externalResult.violations;
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -637,6 +638,7 @@ async function runSyncOnly() {
         { id: 'zajal', icon: '🔗', name: LABELS.zajal },
         { id: 'bseel', icon: '🔗', name: LABELS.bseel },
         { id: 'watar', icon: '🔗', name: LABELS.watar },
+        { id: 'majd', icon: '🔗', name: LABELS.majd },
     ];
     buildSteps(steps);
     setProgress(0, '');
@@ -645,11 +647,11 @@ async function runSyncOnly() {
     const startTime = Date.now();
     log('═══ ' + LABELS.syncing + ' ═══', 'step');
 
-    const sources = ['jadal', 'namaa', 'zajal', 'bseel', 'watar'];
+    const sources = ['jadal', 'namaa', 'zajal', 'bseel', 'watar', 'majd'];
     let totalSynced = 0, totalErrors = 0;
 
     for (let i = 0; i < sources.length; i++) {
-        const r = await syncSource(sources[i], i, 5);
+        const r = await syncSource(sources[i], i, 6);
         totalSynced += r.synced;
         totalErrors += r.errors;
     }

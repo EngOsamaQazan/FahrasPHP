@@ -90,6 +90,7 @@ if (!empty($searchQuery) || !empty($selectedWork)) {
             ['url' => "https://jadal.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=erp&search={$enc}", 'label' => 'نماء', 'src' => 'namaa'],
             ['url' => "https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=jobs&search={$enc}", 'label' => 'بسيل', 'src' => 'bseel'],
             ['url' => "https://watar.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=watar&search={$enc}", 'label' => 'وتر', 'src' => 'watar'],
+            ['url' => "https://majd.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=majd&search={$enc}", 'label' => 'المجد', 'src' => 'majd'],
         ];
         foreach ($apis as $api) {
             $res = fetchJobsApi($api['url'], $api['label']);
@@ -143,8 +144,8 @@ if (!empty($searchQuery) || !empty($selectedWork)) {
 
 $remoteDetail = null;
 if (!empty($selectedSource) && !empty($selectedId)) {
-    $dbMap = ['jadal' => 'jadal', 'namaa' => 'erp', 'watar' => 'watar'];
-    $labelMap = ['jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر'];
+    $dbMap = ['jadal' => 'jadal', 'namaa' => 'erp', 'watar' => 'watar', 'majd' => 'majd'];
+    $labelMap = ['jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'];
 
     if ($selectedSource === 'bseel') {
         $searchTerm = $selectedWork ?: '';
@@ -164,7 +165,7 @@ if (!empty($selectedSource) && !empty($selectedId)) {
         }
     } else {
         $dbName = $dbMap[$selectedSource] ?? '';
-        $hostMap = ['jadal' => 'jadal.aqssat.co', 'namaa' => 'jadal.aqssat.co', 'watar' => 'watar.aqssat.co'];
+        $hostMap = ['jadal' => 'jadal.aqssat.co', 'namaa' => 'jadal.aqssat.co', 'watar' => 'watar.aqssat.co', 'majd' => 'majd.aqssat.co'];
         $detailHost = $hostMap[$selectedSource] ?? 'jadal.aqssat.co';
         if ($dbName) {
             $searchTerm = $selectedWork ?: '';
@@ -338,6 +339,7 @@ if (empty($searchQuery) && empty($selectedWork)) {
 .work-card-source.zajal { background: rgba(59,130,246,0.15); color: #93c5fd; }
 .work-card-source.bseel { background: rgba(236,72,153,0.15); color: #f9a8d4; }
 .work-card-source.watar { background: rgba(139,92,246,0.15); color: #c4b5fd; }
+.work-card-source.majd { background: rgba(249,115,22,0.15); color: #fdba74; }
 .work-card-source.local { background: rgba(148,163,184,0.1); color: #94a3b8; }
 .work-card-type {
     font-size: 11px;

@@ -504,6 +504,7 @@ if (user_can('clients', 'view')) {
 .chip-name.namaa  { background: rgba(234,179,8,0.2);   color: #fde68a; }
 .chip-name.bseel  { background: rgba(236,72,153,0.2);  color: #f9a8d4; }
 .chip-name.watar  { background: rgba(139,92,246,0.2);  color: #c4b5fd; }
+.chip-name.majd  { background: rgba(249,115,22,0.2);  color: #fdba74; }
 .chip-name.local  { background: rgba(148,163,184,0.15); color: #94a3b8; }
 
 .company-chip .chip-detail {
@@ -608,6 +609,7 @@ if (user_can('clients', 'view')) {
 .co-badge.namaa  { background: rgba(234,179,8,0.2);   color: #fde68a; }
 .co-badge.bseel  { background: rgba(236,72,153,0.2);  color: #f9a8d4; }
 .co-badge.watar  { background: rgba(139,92,246,0.2);  color: #c4b5fd; }
+.co-badge.majd  { background: rgba(249,115,22,0.2);  color: #fdba74; }
 .co-badge.local  { background: rgba(148,163,184,0.15); color: #94a3b8; }
 
 .contract-name {
@@ -801,6 +803,7 @@ if (!empty($_GET['search'])) {
         'namaa' => ['url' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=erp&search=' . $searchEncoded, 'label' => 'نماء'],
         'bseel' => ['url' => 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&search=' . $searchEncoded, 'label' => 'بسيل'],
         'watar' => ['url' => 'https://watar.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=watar&search=' . $searchEncoded, 'label' => 'وتر'],
+        'majd' => ['url' => 'https://majd.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=majd&search=' . $searchEncoded, 'label' => 'عالم المجد'],
     ];
 
     $remoteUrls = [];
@@ -888,7 +891,7 @@ if (!empty($_GET['search'])) {
     $_failKeys = array_map(fn($e) => $e['label'], $remote_errors);
     $_failLabelsSet = array_flip($_failKeys);
     $_responded = [];
-    foreach (['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر'] as $_rk => $_rl) {
+    foreach (['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'] as $_rk => $_rl) {
         if (!isset($_failLabelsSet[$_rl])) $_responded[] = $_rk;
     }
     $_failLabels = $_failKeys;
@@ -993,6 +996,7 @@ if (!empty($_GET['search'])) {
                 elseif ($src === 'namaa' || $compName === 'نماء') $chipBadge = 'namaa';
                 elseif ($src === 'bseel' || $compName === 'بسيل' || $compName === 'عمار') $chipBadge = 'bseel';
                 elseif ($src === 'watar' || $compName === 'وتر') $chipBadge = 'watar';
+                elseif ($src === 'majd' || $compName === 'عالم المجد' || $compName === 'المجد') $chipBadge = 'majd';
 
                 $rem = $compData['remaining'];
                 $rawStatus = strtolower(trim($compData['status']));
@@ -1062,6 +1066,7 @@ if (!empty($_GET['search'])) {
             elseif ($source === 'namaa' || $account_name === 'نماء') $badgeClass = 'namaa';
             elseif ($source === 'bseel' || $account_name === 'بسيل' || $account_name === 'عمار') { $badgeClass = 'bseel'; $account_name = 'بسيل'; }
             elseif ($source === 'watar' || $account_name === 'وتر') $badgeClass = 'watar';
+            elseif ($source === 'majd' || $account_name === 'عالم المجد' || $account_name === 'المجد') $badgeClass = 'majd';
 
         $account_id = 0;
         $people_link = '';
@@ -1089,6 +1094,10 @@ if (!empty($_GET['search'])) {
             $attachments_link = 'https://watar.aqssat.co/fahras/client-attachments.php?db=watar&id=' . $key['cid'];
             $people_link = 'https://watar.aqssat.co/fahras/people.php?token=b83ba7a49b72&db=watar&client=' . $key['cid'];
             $relations_link = 'https://watar.aqssat.co/fahras/relations.php?token=b83ba7a49b72&db=watar&client=' . $key['cid'];
+            } elseif ($account_name === 'عالم المجد' || $account_name === 'المجد' || $source === 'majd') {
+            $attachments_link = 'https://majd.aqssat.co/fahras/client-attachments.php?db=majd&id=' . $key['cid'];
+            $people_link = 'https://majd.aqssat.co/fahras/people.php?token=b83ba7a49b72&db=majd&client=' . $key['cid'];
+            $relations_link = 'https://majd.aqssat.co/fahras/relations.php?token=b83ba7a49b72&db=majd&client=' . $key['cid'];
         } else {
             $attachments_link = '/admin/attachments?client=' . $key['id'];
         }
@@ -1341,8 +1350,8 @@ function captureResults(){
     var _h=now.getHours(),_ap=_h>=12?'PM':'AM';_h=_h%12||12;
     var ts=_rPad(_h)+':'+_rPad(now.getMinutes())+' '+_ap;
 
-    var sn={local:'محلي',zajal:'زجل',jadal:'جدل',namaa:'نماء',bseel:'بسيل',watar:'وتر'};
-    var remoteSrc=['zajal','jadal','namaa','bseel','watar'];
+    var sn={local:'محلي',zajal:'زجل',jadal:'جدل',namaa:'نماء',bseel:'بسيل',watar:'وتر',majd:'المجد'};
+    var remoteSrc=['zajal','jadal','namaa','bseel','watar','majd'];
 
     var blockN=0,contactN=0;
     rpt.grp.forEach(function(g){

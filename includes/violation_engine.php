@@ -441,6 +441,7 @@ function resolveAccountName($entry) {
         'namaa' => 'نماء',
         'bseel' => 'بسيل',
         'watar' => 'وتر',
+        'majd' => 'المجد',
     ];
     $source = $entry['_source'] ?? '';
     return $sourceMap[$source] ?? (string)$acc;
@@ -595,6 +596,8 @@ function getPartiesApiUrl($entry) {
             return 'https://jadal.aqssat.co/fahras/relations.php?token=b83ba7a49b72&db=erp&client=' . urlencode($cid);
         case 'watar':
             return 'https://watar.aqssat.co/fahras/relations.php?token=b83ba7a49b72&db=watar&client=' . urlencode($cid);
+        case 'majd':
+            return 'https://majd.aqssat.co/fahras/relations.php?token=b83ba7a49b72&db=majd&client=' . urlencode($cid);
         case 'bseel':
             return 'https://bseel.com/parties.php?contract=' . urlencode($id);
         default:
@@ -840,6 +843,7 @@ function getAccountPhone($entry) {
         'namaa' => 'نماء',
         'bseel' => 'بسيل',
         'watar' => 'وتر',
+        'majd' => 'المجد',
     ];
     $source = $entry['_source'] ?? '';
     if (!empty($source) && isset($sourceMap[$source])) {
@@ -1068,7 +1072,7 @@ function batchScanViolations() {
         foreach ($localFirst as $dup) {
             $localAccountName = $db->get_var('accounts', ['id' => $dup['local_account']], ['name']) ?: $dup['local_account'];
             $remoteAccountName = ucfirst($dup['remote_source']);
-            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر'];
+            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'];
             $remoteAccountName = $sourceMap[$dup['remote_source']] ?? $remoteAccountName;
 
             if ($localAccountName === $remoteAccountName) continue;
@@ -1107,7 +1111,7 @@ function batchScanViolations() {
 
         foreach ($remoteFirst as $dup) {
             $localAccountName = $db->get_var('accounts', ['id' => $dup['local_account']], ['name']) ?: $dup['local_account'];
-            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر'];
+            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'];
             $remoteAccountName = $sourceMap[$dup['remote_source']] ?? ucfirst($dup['remote_source']);
 
             if ($localAccountName === $remoteAccountName) continue;

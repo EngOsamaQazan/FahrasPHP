@@ -34,6 +34,7 @@ $sourceLabels = [
     'namaa' => 'نماء',
     'bseel' => 'بسيل',
     'watar' => 'وتر',
+    'majd' => 'المجد',
 ];
 
 $sourceUrls = [
@@ -42,6 +43,7 @@ $sourceUrls = [
     'namaa' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=erp&search=',
     'bseel' => 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&search=',
     'watar' => 'https://watar.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=watar&search=',
+    'majd' => 'https://majd.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=majd&search=',
 ];
 
 $bulkExportUrls = [
@@ -49,9 +51,10 @@ $bulkExportUrls = [
     'namaa' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=erp&action=bulk_export',
     'bseel' => 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=bulk_export',
     'watar' => 'https://watar.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=watar&action=bulk_export',
+    'majd' => 'https://majd.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=majd&action=bulk_export',
 ];
 
-$bulkSources = ['jadal', 'namaa', 'bseel', 'watar'];
+$bulkSources = ['jadal', 'namaa', 'bseel', 'watar', 'majd'];
 
 switch ($action) {
 
@@ -379,7 +382,7 @@ switch ($action) {
             $startTime = microtime(true);
             $newViolations = 0;
             $checked = 0;
-            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر'];
+            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'];
 
             // العميل المحلي أقدم → الشركة الخارجية مخالفة
             $stmt2 = $db->run("
@@ -478,7 +481,7 @@ switch ($action) {
             $startTime = microtime(true);
             $newViolations = 0;
             $checked = 0;
-            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر'];
+            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'];
 
             $stmt = $db->run("
                 SELECT r1.name, r1.national_id,
