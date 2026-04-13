@@ -83,25 +83,33 @@ if (!empty($_FILES['file']['name'])) {
     margin-bottom: 28px;
 }
 .import-header h1 { color: #fff; font-size: 24px; font-weight: 800; margin: 0 0 6px; }
-.import-header p { color: rgba(255,255,255,0.4); font-size: 12px; margin: 0; }
+.import-header p { color: rgba(255,255,255,0.55); font-size: 13px; margin: 0; line-height: 1.5; }
 .import-header .template-link {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    margin-top: 12px;
-    padding: 8px 16px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 8px;
-    color: #63b3ed;
-    font-size: 12px;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 10px 22px;
+    background: linear-gradient(135deg, rgba(99,179,237,0.22) 0%, rgba(59,130,246,0.12) 100%);
+    border: 1px solid rgba(147, 197, 253, 0.45);
+    border-radius: 10px;
+    color: #e0f2fe;
+    font-size: 13px;
+    font-weight: 700;
     text-decoration: none;
-    transition: all 0.2s;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
 }
-.import-header .template-link:hover {
-    background: rgba(255,255,255,0.12);
+.import-header .template-link:hover,
+.import-header .template-link:focus {
+    background: linear-gradient(135deg, rgba(99,179,237,0.38) 0%, rgba(59,130,246,0.22) 100%);
+    border-color: rgba(191, 219, 254, 0.7);
     color: #fff;
+    transform: translateY(-1px);
+    outline: none;
 }
+.import-header .template-link i { font-size: 14px; opacity: 0.95; }
 
 .import-alert-success {
     background: rgba(72,187,120,0.1);
@@ -128,53 +136,122 @@ if (!empty($_FILES['file']['name'])) {
     margin-right: auto;
 }
 .import-alert-info {
-    background: rgba(99,179,237,0.08);
-    border: 1px solid rgba(99,179,237,0.15);
-    border-radius: 10px;
-    padding: 14px 18px;
-    color: #93c5fd;
-    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: rgba(59, 130, 246, 0.12);
+    border: 1px solid rgba(147, 197, 253, 0.35);
+    border-inline-start: 4px solid #63b3ed;
+    border-radius: 12px;
+    padding: 16px 18px;
+    color: #e0e7ff;
+    font-size: 14px;
+    line-height: 1.65;
     margin-bottom: 24px;
     max-width: 700px;
     margin-left: auto;
     margin-right: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.import-alert-info .import-alert-icon {
+    flex-shrink: 0;
+    font-size: 22px;
+    color: #93c5fd;
+    margin-top: 2px;
+    opacity: 0.95;
+}
+.import-alert-info .import-alert-body {
+    flex: 1;
+    min-width: 0;
+    color: #dbeafe;
 }
 
 .import-form-card {
-    background: rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.07);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 14px;
-    padding: 28px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 32px;
     max-width: 700px;
     margin: 0 auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.import-field {
+    min-width: 0;
 }
 .import-form-card label {
-    color: rgba(255,255,255,0.7);
+    color: rgba(255,255,255,0.9);
     font-size: 13px;
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     display: block;
+    letter-spacing: 0.02em;
 }
 .import-form-card .form-control {
-    background: rgba(255,255,255,0.06) !important;
-    border: 1px solid rgba(255,255,255,0.12) !important;
-    border-radius: 8px !important;
-    color: #e2e8f0 !important;
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.14) !important;
+    border-radius: 10px !important;
+    color: #f1f5f9 !important;
     padding: 12px 14px !important;
     font-size: 13px;
     font-family: 'Almarai', sans-serif;
+    min-height: 46px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.import-form-card select.form-control {
+    cursor: pointer;
+    line-height: 1.45;
+    padding-top: 11px !important;
+    padding-bottom: 11px !important;
+}
+.import-form-card input[type="file"].form-control {
+    padding: 12px 14px !important;
+    min-height: 48px;
+    cursor: pointer;
+    line-height: 1.5;
+}
+.import-form-card input[type="file"].form-control::file-selector-button {
+    font-family: 'Almarai', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 8px 16px;
+    margin-inline-end: 14px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(99,179,237,0.4) 0%, rgba(37,99,235,0.35) 100%);
+    color: #f8fafc;
+    cursor: pointer;
+}
+.import-form-card input[type="file"].form-control::file-selector-button:hover {
+    filter: brightness(1.12);
+}
+.import-form-card input[type="file"].form-control::-webkit-file-upload-button {
+    font-family: 'Almarai', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 8px 16px;
+    margin-inline-end: 14px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(99,179,237,0.4) 0%, rgba(37,99,235,0.35) 100%);
+    color: #f8fafc;
+    cursor: pointer;
 }
 .import-form-card .form-control:focus {
-    border-color: rgba(99,179,237,0.5) !important;
+    border-color: rgba(147, 197, 253, 0.65) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+    outline: none;
 }
 .import-form-card select.form-control option {
     background: #1a1a2e;
     color: #e2e8f0;
 }
 .import-form-card small {
-    color: rgba(255,255,255,0.35);
-    font-size: 11px;
+    display: block;
+    margin-top: 8px;
+    color: rgba(255,255,255,0.45);
+    font-size: 12px;
+    line-height: 1.45;
 }
 .import-form-card .btn-submit {
     background: linear-gradient(135deg, #27ae60, #2ecc71);
@@ -197,8 +274,9 @@ if (!empty($_FILES['file']['name'])) {
 .import-form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 16px;
+    gap: 24px;
+    align-items: start;
+    margin-bottom: 8px;
 }
 
 .import-footer {
@@ -239,17 +317,20 @@ if (!empty($_FILES['file']['name'])) {
         <div class="import-alert-danger"><i class="fa fa-times-circle"></i> <?=_e('لم تتم إضافة أي عملاء')?>.</div>
         <?php } ?>
 
-        <div class="import-alert-info"><i class="fa fa-info-circle"></i> <?=_e('يرجى استخدام ملف القالب لاستيراد البيانات')?> - <?=_e('الرقم الوطني فريد، سيتم تخطي المكرر')?>.</div>
+        <div class="import-alert-info">
+            <i class="fa fa-info-circle import-alert-icon" aria-hidden="true"></i>
+            <span class="import-alert-body"><?=_e('يرجى استخدام ملف القالب لاستيراد البيانات')?> - <?=_e('الرقم الوطني فريد، سيتم تخطي المكرر')?>.</span>
+        </div>
 
         <div class="import-form-card">
             <form method="post" action="" enctype="multipart/form-data">
                 <div class="import-form-row">
-                    <div>
+                    <div class="import-field">
                         <label><?=_e('يرجى رفع الملف')?></label>
                         <input accept=".xls, .xlsx, .csv" type="file" name="file" class="form-control" required>
                         <small><?=_e('الملفات المقبولة')?>: xlsx, xls, csv</small>
                     </div>
-                    <div>
+                    <div class="import-field">
                         <label><?=_e('يرجى اختيار الشركة')?></label>
                         <select class="form-control" name="account" required>
                             <option value="">- <?=_e('اختيار')?> -</option>

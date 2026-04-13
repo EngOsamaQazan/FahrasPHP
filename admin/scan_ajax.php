@@ -47,6 +47,7 @@ $sourceUrls = [
 ];
 
 $bulkExportUrls = [
+    'zajal' => 'https://zajal.cc/fahras-api.php?token=354afdf5357c&action=bulk_export',
     'jadal' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=jadal&action=bulk_export',
     'namaa' => 'https://jadal.aqssat.co/fahras/api.php?token=b83ba7a49b72&db=erp&action=bulk_export',
     'bseel' => 'https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=bulk_export',
@@ -534,6 +535,110 @@ switch ($action) {
                 'elapsed' => $elapsed,
             ]);
         } catch (Throwable $e) {
+            echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+        }
+        break;
+
+    // ─── فحص المخالفات الموحّد: كل المصادر دفعة واحدة ───
+    case 'scan_violations':
+        try {
+            $db->run("UPDATE violations SET status = 'exempted_before_system', fine_amount = 0 WHERE violating_sell_date < '2026-01-01' AND status = 'active'");
+
+            $startTime = microtime(true);
+            $newViolations = 0;
+            $excludedIds = implode(',', getExcludedAccountIds());
+            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل'];
+
+            $db->run("DROP TEMPORARY TABLE IF EXISTS tmp_all_clients");
+
+            $db->run("
+                CREATE TEMPORARY TABLE tmp_all_clients (
+                    name VARCHAR(255),
+                    national_id VARCHAR(50),
+                    account_label VARCHAR(100),
+                    source_type VARCHAR(20),
+                    effective_date DATETIME,
+                    remaining_amount DECIMAL(12,2),
+                    status VARCHAR(50),
+                    party_type VARCHAR(50),
+                    INDEX idx_nid (national_id),
+                    INDEX idx_name (name(100))
+                ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+            ");
+
+            $db->run("
+                INSERT INTO tmp_all_clients
+                SELECT c.name, c.national_id,
+                       COALESCE(a.name, CAST(c.account AS CHAR)) AS account_label,
+                       'local' AS source_type,
+                       COALESCE(c.created_on, c.sell_date) AS effective_date,
+                       c.remaining_amount, c.status, 'عميل' AS party_type
+                FROM clients c
+                LEFT JOIN accounts a ON a.id = c.account
+                WHERE c.account NOT IN ($excludedIds)
+            ");
+
+            $sourceLabelsCase = [];
+            foreach ($sourceMap as $key => $label) {
+                $sourceLabelsCase[] = "WHEN " . $db->quote($key) . " THEN " . $db->quote($label);
+            }
+            $caseExpr = "CASE r.source " . implode(' ', $sourceLabelsCase) . " ELSE r.source END";
+
+            $db->run("
+                INSERT INTO tmp_all_clients
+                SELECT r.name, r.national_id,
+                       $caseExpr AS account_label,
+                       r.source AS source_type,
+                       COALESCE(r.created_on, r.sell_date) AS effective_date,
+                       r.remaining_amount, r.status,
+                       COALESCE(r.party_type, 'عميل') AS party_type
+                FROM remote_clients r
+            ");
+
+            $countStmt = $db->run("SELECT source_type, COUNT(*) AS cnt FROM tmp_all_clients GROUP BY source_type");
+            $debugCounts = ($countStmt && is_object($countStmt)) ? $countStmt->fetchAll() : [];
+            $totalInTemp = 0;
+            $countBreakdown = [];
+            foreach ($debugCounts as $dc) {
+                $totalInTemp += (int)$dc['cnt'];
+                $countBreakdown[$dc['source_type']] = (int)$dc['cnt'];
+            }
+
+            $dateStmt = $db->run("SELECT COUNT(*) AS cnt FROM tmp_all_clients WHERE effective_date IS NOT NULL");
+            $withDate = ($dateStmt && is_object($dateStmt)) ? (int)$dateStmt->fetchColumn() : 0;
+
+            $stmt = $db->run("SELECT c1.name, c1.national_id, c1.account_label AS entitled_account, c1.source_type AS entitled_source, c1.effective_date AS entitled_date, c1.remaining_amount, c1.status, c2.account_label AS violating_account, c2.source_type AS violating_source, c2.effective_date AS violating_date, c2.party_type FROM tmp_all_clients c1 INNER JOIN tmp_all_clients c2 ON (c1.account_label != c2.account_label AND ((c1.national_id != '' AND c1.national_id IS NOT NULL AND c1.national_id = c2.national_id) OR (c1.name = c2.name AND (c1.national_id IS NULL OR c1.national_id = '')))) WHERE c1.effective_date IS NOT NULL AND c2.effective_date IS NOT NULL AND c1.effective_date < c2.effective_date AND c2.effective_date >= '2026-01-01' LIMIT 15000");
+            $pairs = ($stmt && is_object($stmt)) ? $stmt->fetchAll() : [];
+
+            foreach ($pairs as $dup) {
+                $recorded = recordViolationFromData(
+                    $dup['name'], $dup['national_id'],
+                    (string)$dup['entitled_account'], $dup['entitled_source'], $dup['entitled_date'],
+                    $dup['remaining_amount'], $dup['status'],
+                    (string)$dup['violating_account'], $dup['violating_source'], $dup['violating_date'],
+                    $dup['party_type']
+                );
+                if ($recorded) $newViolations++;
+            }
+
+            $db->run("DROP TEMPORARY TABLE IF EXISTS tmp_all_clients");
+
+            $elapsed = round(microtime(true) - $startTime, 1);
+            log_activity('scan_violations', null, null, "Unified scan: found $newViolations violations in {$elapsed}s, checked " . count($pairs) . " pairs");
+
+            echo json_encode([
+                'ok' => true,
+                'violations' => $newViolations,
+                'checked' => count($pairs),
+                'elapsed' => $elapsed,
+                'debug' => [
+                    'temp_total' => $totalInTemp,
+                    'breakdown' => $countBreakdown,
+                    'with_date' => $withDate,
+                ],
+            ]);
+        } catch (Throwable $e) {
+            $db->run("DROP TEMPORARY TABLE IF EXISTS tmp_all_clients");
             echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
         }
         break;

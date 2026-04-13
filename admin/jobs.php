@@ -19,11 +19,14 @@ function fetchJobsApi($url, $label) {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_HEADER, false);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
     curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_REFERER, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
     curl_setopt($ch, CURLOPT_TIMEOUT, 8);
+    curl_setopt($ch, CURLOPT_ENCODING, '');
     $raw = curl_exec($ch);
     $errno = curl_errno($ch);
     $error = curl_error($ch);
@@ -42,6 +45,9 @@ function fetchJobsApi($url, $label) {
     $data = json_decode($raw, true);
     if (!is_array($data)) {
         return ['ok' => false, 'label' => $label, 'data' => [], 'error' => _e('صيغة استجابة غير صالحة')];
+    }
+    if (isset($data['error'])) {
+        return ['ok' => false, 'label' => $label, 'data' => [], 'error' => $data['error']];
     }
     return ['ok' => true, 'label' => $label, 'data' => $data, 'error' => ''];
 }
@@ -84,29 +90,63 @@ if (!empty($searchQuery) || !empty($selectedWork)) {
         $localCount = count($workplaces);
         $remoteStatuses[] = ['label' => _e('محلي'), 'src' => 'local', 'status' => $localCount > 0 ? 'ok' : 'empty', 'count' => $localCount];
 
-        $enc = urlencode($searchQuery);
-        $apis = [
-            ['url' => "https://jadal.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=jadal&search={$enc}", 'label' => 'جدل', 'src' => 'jadal'],
-            ['url' => "https://jadal.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=erp&search={$enc}", 'label' => 'نماء', 'src' => 'namaa'],
-            ['url' => "https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=jobs&search={$enc}", 'label' => 'بسيل', 'src' => 'bseel'],
-            ['url' => "https://watar.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=watar&search={$enc}", 'label' => 'وتر', 'src' => 'watar'],
-            ['url' => "https://majd.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=majd&search={$enc}", 'label' => 'المجد', 'src' => 'majd'],
-        ];
-        foreach ($apis as $api) {
-            $res = fetchJobsApi($api['url'], $api['label']);
-            if ($res['ok'] && !empty($res['data'])) {
-                foreach ($res['data'] as $item) {
-                    $item['_source'] = $api['src'];
-                    $item['_label'] = $api['label'];
-                    $remoteWorkplaces[] = $item;
-                }
-                $remoteStatuses[] = ['label' => $api['label'], 'src' => $api['src'], 'status' => 'ok', 'count' => count($res['data'])];
-            } elseif ($res['ok'] && empty($res['data'])) {
-                $remoteStatuses[] = ['label' => $api['label'], 'src' => $api['src'], 'status' => 'empty', 'count' => 0];
-            } else {
-                $remoteErrors[] = ['label' => $api['label'], 'error' => $res['error'] ?? ''];
-                $remoteStatuses[] = ['label' => $api['label'], 'src' => $api['src'], 'status' => 'error', 'error' => $res['error'] ?? ''];
+        try {
+            $enc = urlencode($searchQuery);
+            $apis = [
+                'jadal' => ['url' => "https://jadal.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=jadal&search={$enc}", 'label' => 'جدل', 'src' => 'jadal'],
+                'namaa' => ['url' => "https://jadal.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=erp&search={$enc}", 'label' => 'نماء', 'src' => 'namaa'],
+                'bseel' => ['url' => "https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=jobs&search={$enc}", 'label' => 'بسيل', 'src' => 'bseel'],
+                'watar' => ['url' => "https://watar.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=watar&search={$enc}", 'label' => 'وتر', 'src' => 'watar'],
+                'majd' => ['url' => "https://majd.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=majd&search={$enc}", 'label' => 'المجد', 'src' => 'majd'],
+            ];
+
+            $remoteUrls = [];
+            foreach ($apis as $k => $v) {
+                $remoteUrls[$k] = $v['url'];
             }
+            $multiResults = curl_multi_load($remoteUrls);
+
+            foreach ($apis as $srcKey => $api) {
+                $raw = $multiResults[$srcKey]['body'] ?? null;
+                $error = $multiResults[$srcKey]['error'] ?? null;
+
+                if ($error || $raw === null || trim($raw) === '') {
+                    $remoteErrors[] = ['label' => $api['label'], 'error' => $error ?: _e('لا استجابة من الخادم')];
+                    $remoteStatuses[] = ['label' => $api['label'], 'src' => $api['src'], 'status' => 'error', 'error' => $error ?: _e('لا استجابة من الخادم')];
+                    continue;
+                }
+
+                $decoded = json_decode($raw, true);
+                if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded)) {
+                    $remoteErrors[] = ['label' => $api['label'], 'error' => _e('صيغة استجابة غير صالحة')];
+                    $remoteStatuses[] = ['label' => $api['label'], 'src' => $api['src'], 'status' => 'error', 'error' => _e('صيغة استجابة غير صالحة')];
+                    continue;
+                }
+
+                if (isset($decoded['error'])) {
+                    $remoteErrors[] = ['label' => $api['label'], 'error' => $decoded['error']];
+                    $remoteStatuses[] = ['label' => $api['label'], 'src' => $api['src'], 'status' => 'error', 'error' => $decoded['error']];
+                    continue;
+                }
+
+                if (isset($decoded['data']) && is_array($decoded['data'])) {
+                    $decoded = $decoded['data'];
+                }
+
+                if (!empty($decoded)) {
+                    foreach ($decoded as $item) {
+                        if (!is_array($item)) continue;
+                        $item['_source'] = $api['src'];
+                        $item['_label'] = $api['label'];
+                        $remoteWorkplaces[] = $item;
+                    }
+                    $remoteStatuses[] = ['label' => $api['label'], 'src' => $api['src'], 'status' => 'ok', 'count' => count($decoded)];
+                } else {
+                    $remoteStatuses[] = ['label' => $api['label'], 'src' => $api['src'], 'status' => 'empty', 'count' => 0];
+                }
+            }
+        } catch (Throwable $e) {
+            $remoteErrors[] = ['label' => 'APIs', 'error' => $e->getMessage()];
         }
     }
 

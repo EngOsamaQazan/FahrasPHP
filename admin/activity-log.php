@@ -190,6 +190,12 @@ $actionLabels = [
 }
 .al-log-meta b { color: rgba(255,255,255,0.7); margin-right: 2px; }
 
+.al-log-user {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+}
+
 .al-badge {
     display: inline-flex;
     align-items: center;
@@ -305,7 +311,7 @@ $actionLabels = [
             <div class="al-log-body">
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                     <span class="al-badge <?= $al[1] ?>"><i class="fa <?= $al[0] ?>"></i> <?= $al[2] ?></span>
-                    <span style="font-size:13px;font-weight:700;color:#fff;"><?= htmlspecialchars($log['user_name'] ?? $log['username'] ?? '-') ?></span>
+                    <span class="al-log-user"><?= htmlspecialchars($log['user_name'] ?? $log['username'] ?? '-') ?></span>
                 </div>
                 <div class="al-log-meta">
                     <?php if (!empty($log['details'])) { ?>

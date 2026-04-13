@@ -155,6 +155,30 @@ $accounts = $db->get_all('accounts');
     background: #1a1a2e;
     color: #e2e8f0;
 }
+.filter-card .v-month-field {
+    min-width: 170px;
+    cursor: pointer;
+}
+
+/* تقويم الشهر (Vanillajs Datepicker) */
+.datepicker-dropdown {
+    z-index: 10050 !important;
+    font-family: 'Almarai', sans-serif !important;
+    direction: rtl;
+}
+.dark-theme .datepicker-picker {
+    background: #1e293b !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+.dark-theme .datepicker-cell:not(.disabled):hover {
+    background: rgba(99, 179, 237, 0.15) !important;
+}
+.dark-theme .datepicker-cell.selected,
+.dark-theme .datepicker-cell.selected:hover {
+    background: #2563eb !important;
+    color: #fff !important;
+}
 .filter-card .btn-filter {
     background: linear-gradient(135deg, #1f62b9, #2980b9);
     border: none;
@@ -419,6 +443,11 @@ $accounts = $db->get_all('accounts');
 .violations-footer a:hover { color: rgba(255,255,255,0.6); }
 .violations-footer .fa-heart { color: #e53e3e; }
 
+.v-amount {
+    color: #fc8181;
+    font-weight: 700;
+}
+
 .violations-page ~ footer.footer { display: none !important; }
 
 @media (max-width: 768px) {
@@ -440,7 +469,13 @@ $accounts = $db->get_all('accounts');
         <div class="filter-card">
             <form method="get">
                 <div class="filter-row">
-                    <input type="month" name="month" value="<?= htmlspecialchars($filterMonth) ?>" placeholder="<?= _e('الشهر') ?>">
+                    <input type="text"
+                           name="month"
+                           class="v-month-field"
+                           value="<?= htmlspecialchars($filterMonth) ?>"
+                           placeholder="<?= _e('الشهر') ?>"
+                           autocomplete="off"
+                           inputmode="none">
                     <select name="status">
                         <option value=""><?= _e('جميع الحالات') ?></option>
                         <option value="active" <?= $filterStatus === 'active' ? 'selected' : '' ?>><?= _e('نشطة') ?></option>
@@ -487,7 +522,7 @@ $accounts = $db->get_all('accounts');
                     <tr>
                         <td><b><?= htmlspecialchars($s['violating_account']) ?></b></td>
                         <td><?= $s['total'] ?></td>
-                        <td><span style="color:#fc8181;font-weight:700;"><?= number_format($s['unpaid_total'], 2) ?></span> <?= _e('دينار') ?></td>
+                        <td><span class="v-amount"><?= number_format($s['unpaid_total'], 2) ?></span> <?= _e('دينار') ?></td>
                     </tr>
                     <?php } ?>
                 </tbody>
@@ -521,7 +556,7 @@ $accounts = $db->get_all('accounts');
                 <div class="v-card-detail"><span><?= _e('تاريخ عقد المستحق') ?>:</span> <?= htmlspecialchars(formatTo12h($v['entitled_sell_date'] ?? '')) ?></div>
                 <div class="v-card-detail"><span><?= _e('الشركة المخالفة') ?>:</span> <?= htmlspecialchars($v['violating_account']) ?></div>
                 <div class="v-card-detail"><span><?= _e('تاريخ المخالفة') ?>:</span> <?= htmlspecialchars(formatTo12h($v['violating_sell_date'] ?? '')) ?></div>
-                <div class="v-card-detail"><span><?= _e('الغرامة') ?>:</span> <b style="color:#fc8181;"><?= number_format($v['fine_amount'], 2) ?></b> <?= _e('دينار') ?></div>
+                <div class="v-card-detail"><span><?= _e('الغرامة') ?>:</span> <span class="v-amount"><?= number_format($v['fine_amount'], 2) ?></span> <?= _e('دينار') ?></div>
             </div>
             <div class="v-card-bottom">
                 <?php
@@ -614,5 +649,24 @@ $accounts = $db->get_all('accounts');
         </div>
     </div>
 </div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/css/datepicker.min.css">
+<script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/js/datepicker-full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/js/locales/ar.js"></script>
+<script>
+(function () {
+    var el = document.querySelector('.violations-page .v-month-field');
+    if (!el || typeof Datepicker === 'undefined') return;
+    try {
+        new Datepicker(el, {
+            format: 'yyyy-mm',
+            pickLevel: 1,
+            autohide: true,
+            language: 'ar',
+            orientation: 'right auto'
+        });
+    } catch (e) {}
+})();
+</script>
 
 <?php include 'footer.php'; ?>

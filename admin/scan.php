@@ -288,6 +288,7 @@ const LABELS = {
     scanLocal: '<?= _e('فحص محلي مقابل محلي') ?>',
     scanRemote: '<?= _e('فحص محلي مقابل خارجي') ?>',
     scanExternal: '<?= _e('فحص خارجي مقابل خارجي') ?>',
+    scanViolations: '<?= _e('فحص المخالفات') ?>',
     combinedDone: '<?= _e('اكتمل الفحص المجمع') ?>',
     bulkSync: '<?= _e('مزامنة مجمعة') ?>',
     syncDone: '<?= _e('اكتملت المزامنة') ?>',
@@ -433,14 +434,45 @@ async function syncSource(source, stepIdx, totalSteps) {
                 log(`${label}: ${r.synced} ${LABELS.newRecords}, ${r.updated} ${LABELS.updated} (${r.elapsed}s)`, 'success');
             }
             return { synced: r.synced, updated: r.updated, errors: r.errors || 0, elapsed: r.elapsed, ok: true };
+        } else if (isBulk) {
+            log(`${label}: فشل التصدير الجماعي، جاري التبديل للمزامنة الفردية...`, 'warn');
+            return await syncSourceFallback(source, stepIdx, totalSteps);
         } else {
             setStep(source, 'error', LABELS.failed);
             log(`${label}: ${r.error || LABELS.connectionFailed}`, 'error');
             return { synced: 0, updated: 0, errors: 1, elapsed: 0, ok: false };
         }
     } catch (e) {
+        if (isBulk) {
+            log(`${label}: فشل التصدير الجماعي (${e.message})، جاري التبديل للمزامنة الفردية...`, 'warn');
+            return await syncSourceFallback(source, stepIdx, totalSteps);
+        }
         setStep(source, 'error', LABELS.connectionFailed);
         log(`${label}: ${e.message}`, 'error');
+        return { synced: 0, updated: 0, errors: 1, elapsed: 0, ok: false };
+    }
+}
+
+async function syncSourceFallback(source, stepIdx, totalSteps) {
+    const label = LABELS[source] || source;
+    try {
+        const r = await ajax('sync_source', { source });
+        const pct = ((stepIdx + 1) / totalSteps) * 100;
+
+        if (r.ok) {
+            const detail = `جديد: ${r.synced} | محدّث: ${r.updated} | ${r.elapsed} ث (فردي)`;
+            setStep(source, r.status === 'ok' ? 'success' : 'error', detail);
+            setProgress(pct, `${label}: ${r.synced} ${LABELS.newRecords}`);
+            log(`${label}: ${r.synced} ${LABELS.newRecords}, ${r.updated} ${LABELS.updated} (${r.elapsed}s) [مزامنة فردية]`, 'success');
+            return { synced: r.synced, updated: r.updated, errors: r.errors || 0, elapsed: r.elapsed, ok: true };
+        } else {
+            setStep(source, 'error', LABELS.failed);
+            log(`${label}: ${r.error || LABELS.connectionFailed}`, 'error');
+            return { synced: 0, updated: 0, errors: 1, elapsed: 0, ok: false };
+        }
+    } catch (e2) {
+        setStep(source, 'error', LABELS.connectionFailed);
+        log(`${label}: ${e2.message}`, 'error');
         return { synced: 0, updated: 0, errors: 1, elapsed: 0, ok: false };
     }
 }
@@ -563,6 +595,38 @@ function showSummary(title, stats) {
     document.getElementById('summary-panel').style.display = 'block';
 }
 
+// ─── فحص المخالفات الموحّد ───
+async function scanViolations(stepIdx, totalSteps) {
+    setStep('scan_violations', 'active');
+    log(`${LABELS.scanning}: ${LABELS.scanViolations}...`, 'step');
+
+    try {
+        const r = await ajax('scan_violations');
+        const pct = ((stepIdx + 1) / totalSteps) * 100;
+
+        if (r.ok) {
+            const detail = `${r.violations} ${LABELS.newViolations} | ${r.checked} ${LABELS.checked} | ${r.elapsed} ث`;
+            setStep('scan_violations', 'success', detail);
+            setProgress(pct, `${LABELS.scanViolations}: ${r.violations} ${LABELS.newViolations}`);
+            log(`${LABELS.scanViolations}: ${r.violations} ${LABELS.newViolations}, ${r.checked} ${LABELS.checked} (${r.elapsed}s)`, r.violations > 0 ? 'warn' : 'success');
+            if (r.debug) {
+                const d = r.debug;
+                const parts = Object.entries(d.breakdown || {}).map(([k,v]) => `${k}: ${v}`).join(' | ');
+                log(`   ⤷ جدول موحّد: ${d.temp_total} سجل (${parts}) — منها ${d.with_date} بتاريخ`, 'dim');
+            }
+            return { violations: r.violations, elapsed: r.elapsed };
+        } else {
+            setStep('scan_violations', 'error', LABELS.failed);
+            log(`${LABELS.scanViolations}: ${r.error}`, 'error');
+            return { violations: 0, elapsed: 0 };
+        }
+    } catch (e) {
+        setStep('scan_violations', 'error', LABELS.connectionFailed);
+        log(`${LABELS.scanViolations}: ${e.message}`, 'error');
+        return { violations: 0, elapsed: 0 };
+    }
+}
+
 // ─── الجرد المجمّع ───
 async function runFullScan() {
     if (isRunning) return;
@@ -679,9 +743,7 @@ async function runScanOnly() {
     showUI(true);
 
     const steps = [
-        { id: 'scan_local', icon: '🔍', name: LABELS.scanLocal },
-        { id: 'scan_remote', icon: '🌐', name: LABELS.scanRemote },
-        { id: 'scan_external', icon: '🔄', name: LABELS.scanExternal },
+        { id: 'scan_violations', icon: '🔍', name: LABELS.scanViolations },
     ];
     buildSteps(steps);
     setProgress(0, '');
@@ -690,10 +752,8 @@ async function runScanOnly() {
     const startTime = Date.now();
     log('═══ ' + LABELS.scanning + ' ═══', 'step');
 
-    const localResult = await scanLocal(0, 3);
-    const remoteResult = await scanRemote(1, 3);
-    const externalResult = await scanExternal(2, 3);
-    const totalViolations = localResult.violations + remoteResult.violations + externalResult.violations;
+    const scanResult = await scanViolations(0, 1);
+    const totalViolations = scanResult.violations;
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
 
     setProgress(100);

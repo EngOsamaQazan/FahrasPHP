@@ -96,7 +96,8 @@ a:focus {
 }
 
 .navbar-inverse .navbar-nav > li > a {
-    color: rgba(255, 255, 255, 0.75) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 600;
     transition: background 0.2s, color 0.2s;
     border-radius: 6px;
     margin: 6px 2px;

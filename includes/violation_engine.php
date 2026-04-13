@@ -12,6 +12,8 @@
 
 require_once __DIR__ . '/bootstrap.php';
 
+define('SYSTEM_ADOPTION_DATE', '2026-01-01');
+
 /**
  * الشركات المستثناة من نظام المخالفات.
  */
@@ -1156,6 +1158,9 @@ function recordViolationFromData($name, $nationalId, $entitledAccount, $entitled
     if ($isFinished || $isCanceled) return false;
     if ($remaining !== null && (float)$remaining < 150) return false;
     if ($remaining === null) return false;
+
+    $vDate = strtotime($violatingDate ?: '');
+    if ($vDate && $vDate < strtotime(SYSTEM_ADOPTION_DATE)) return false;
 
     $violationMonth = date('Y-m-01', strtotime($violatingDate ?: 'now'));
 
