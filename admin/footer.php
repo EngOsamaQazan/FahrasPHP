@@ -43,7 +43,7 @@ if (!isset($token)) {
 
 		function toggleFahrasTheme(e) {
 		    if (e) e.preventDefault();
-		    var current = localStorage.getItem('fahras_theme') || 'dark';
+		    var current = localStorage.getItem('fahras_theme') || 'light';
 		    var next = (current === 'dark') ? 'light' : 'dark';
 		    localStorage.setItem('fahras_theme', next);
 		    document.cookie = 'fahras_theme=' + next + ';path=/;max-age=' + (86400 * 365);

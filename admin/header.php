@@ -16,7 +16,7 @@ $user = auth_user();
 setcookie('language', $user['language'] ?? 'ar', time() + (86400 * 30), "/");
 
 $lang = $user['language'] ?? 'ar';
-$currentTheme = $_COOKIE['fahras_theme'] ?? 'dark';
+$currentTheme = $_COOKIE['fahras_theme'] ?? 'light';
 $isDark = ($currentTheme !== 'light');
 ?>
 <!DOCTYPE html>

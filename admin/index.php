@@ -1363,103 +1363,116 @@ function captureResults(){
     var svr='';
     remoteSrc.forEach(function(s){
         var ok=rpt.ok.indexOf(s)>=0;
-        svr+='<div style="display:inline-block;padding:5px 12px;border-radius:6px;margin:0 4px 4px 0;font-size:12px;font-weight:700;'
-            +'background:'+(ok?'rgba(72,187,120,0.15)':'rgba(245,101,101,0.15)')+';'
-            +'color:'+(ok?'#68d391':'#fc8181')+';">'+(ok?'●':'✗')+' '+sn[s]+'</div>';
+        svr+='<div style="display:inline-block;padding:6px 12px;border-radius:8px;margin:0 4px 6px 0;font-size:12px;font-weight:700;'
+            +'background:'+(ok?'#ecfdf5':'#fef2f2')+';color:'+(ok?'#166534':'#b91c1c')+';border:1px solid '+(ok?'#bbf7d0':'#fecaca')+';">'
+            +(ok?'●':'✗')+' '+sn[s]+'</div>';
     });
 
     var sb=[];
     for(var k in rpt.src)if(rpt.src.hasOwnProperty(k))sb.push((sn[k]||k)+': '+rpt.src[k]);
     var sbText=sb.join('  ·  ');
 
-    var recBg,recBdr,recClr,recTxt;
+    var recBg,recBdr,recClr,recTxt,recSub;
     switch(rpt.rec){
         case 'can_sell':
-            recBg='rgba(72,187,120,0.12)';recBdr='rgba(72,187,120,0.4)';recClr='#68d391';recTxt='● يمكن البيع';break;
+            recBg='#ecfdf5';recBdr='#34d399';recClr='#047857';recTxt='● يمكن البيع';
+            recSub='لا تظهر موانع فهرسية تمنع البيع وفق البيانات أدناه.';break;
         case 'cannot_sell':
-            recBg='rgba(245,101,101,0.12)';recBdr='rgba(245,101,101,0.4)';recClr='#fc8181';recTxt='✗ لا يمكن البيع';break;
+            recBg='#fef2f2';recBdr='#f87171';recClr='#b91c1c';recTxt='✗ لا يمكن البيع';
+            recSub='لا تُكمل عملية البيع — يوجد منع أو شرط يجب الالتزام به حسب التفاصيل.';break;
         case 'contact_first':
-            recBg='rgba(236,201,75,0.12)';recBdr='rgba(236,201,75,0.4)';recClr='#f6e05e';recTxt='⚠ يتطلب تحقق';break;
+            recBg='#fffbeb';recBdr='#fbbf24';recClr='#b45309';recTxt='⚠ يتطلب تحقق';
+            recSub='راجع التحذيرات أو تواصل مع المسؤول قبل تأكيد أي بيع.';break;
         default:
-            recBg='rgba(148,163,184,0.12)';recBdr='rgba(148,163,184,0.3)';recClr='#94a3b8';recTxt='لا توجد نتائج';
+            recBg='#f1f5f9';recBdr='#94a3b8';recClr='#475569';recTxt='لا توجد نتائج';
+            recSub='لم يُعثر على نتائج مطابقة لكلمة البحث.';break;
+    }
+
+    function _rptEsc(t){
+        return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     var blk='';
     rpt.grp.forEach(function(g){
         if(g.rec==='cannot_sell')
-            blk+='<div style="padding:8px 12px;margin-bottom:6px;background:rgba(245,101,101,0.08);border-radius:8px;border-right:3px solid rgba(245,101,101,0.4);font-size:12px;color:#fed7d7;line-height:1.7;">✗ '+g.msg+'</div>';
+            blk+='<div style="padding:10px 14px;margin-bottom:8px;background:#fef2f2;border-radius:10px;border-right:4px solid #ef4444;font-size:13px;color:#991b1b;line-height:1.75;font-weight:600;">✗ '+_rptEsc(g.msg)+'</div>';
         else if(g.rec==='contact_first')
-            blk+='<div style="padding:8px 12px;margin-bottom:6px;background:rgba(236,201,75,0.08);border-radius:8px;border-right:3px solid rgba(236,201,75,0.4);font-size:12px;color:#fefcbf;line-height:1.7;">⚠ '+g.msg+'</div>';
+            blk+='<div style="padding:10px 14px;margin-bottom:8px;background:#fffbeb;border-radius:10px;border-right:4px solid #f59e0b;font-size:13px;color:#92400e;line-height:1.75;font-weight:600;">⚠ '+_rptEsc(g.msg)+'</div>';
     });
     if(rpt.pw&&rpt.pw.length>0){
         rpt.pw.forEach(function(p){
-            blk+='<div style="padding:8px 12px;margin-bottom:6px;background:rgba(245,101,101,0.08);border-radius:8px;border-right:3px solid rgba(245,101,101,0.4);font-size:12px;color:#fed7d7;line-height:1.7;">✗ طرف عقد مخالف: '+p+'</div>';
+            blk+='<div style="padding:10px 14px;margin-bottom:8px;background:#fef2f2;border-radius:10px;border-right:4px solid #ef4444;font-size:13px;color:#991b1b;line-height:1.75;font-weight:600;">✗ طرف عقد مخالف: '+_rptEsc(p)+'</div>';
         });
     }
 
     var inc='';
     if(rpt.fail&&rpt.fail.length>0)
-        inc='<div style="padding:8px 12px;margin-top:8px;background:rgba(251,191,36,0.08);border-radius:8px;border-right:3px solid rgba(251,191,36,0.4);font-size:11px;color:#fbd38d;line-height:1.7;">⚠ هذا التقرير لا يشمل بيانات: '+rpt.fail.join('، ')+' بسبب عدم استجابة الخادم</div>';
+        inc='<div style="padding:8px 12px;margin-top:8px;background:#fffbeb;border-radius:8px;border-right:3px solid #f59e0b;font-size:11px;color:#92400e;line-height:1.7;">⚠ هذا التقرير لا يشمل بيانات: '+rpt.fail.join('، ')+' بسبب عدم استجابة الخادم</div>';
 
-    var c1='background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;text-align:center;';
+    var c1='background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 10px;text-align:center;';
+    var qSafe=_rptEsc(rpt.q);
 
-    var h='<div style="width:560px;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 40%,#0f3460 100%);font-family:Almarai,Arial,sans-serif;direction:rtl;padding:28px 24px;color:#e0e6ed;">'
+    var h='<div lang="ar" style="width:560px;background:#fff;font-family:Almarai,Tahoma,Arial,sans-serif;direction:rtl;padding:24px 20px;color:#1e293b;border:1px solid #e2e8f0;border-radius:14px;">'
 
-    +'<div style="text-align:center;margin-bottom:20px;">'
-    +'<div style="font-size:28px;font-weight:800;color:#fff;letter-spacing:1px;">فهرس</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:2px;">تقرير بحث العملاء</div>'
+    +'<div style="text-align:center;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #e2e8f0;">'
+    +'<div style="font-size:24px;font-weight:800;color:#0f172a;">فهرس</div>'
+    +'<div style="font-size:12px;color:#64748b;margin-top:4px;">تقرير بحث العملاء</div>'
     +'</div>'
 
-    +'<div style="background:'+recBg+';border:2px solid '+recBdr+';border-radius:14px;padding:22px;text-align:center;margin-bottom:18px;">'
-    +'<div style="font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:8px;">التوصية النهائية</div>'
-    +'<div style="font-size:24px;font-weight:800;color:'+recClr+';">'+recTxt+'</div>'
-    +(rpt.fail&&rpt.fail.length>0?'<div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:6px;">* بيانات '+rpt.fail.join(' و ')+' غير متوفرة</div>':'')
-    +'</div>'
+    +'<div style="background:'+recBg+';border:2px solid '+recBdr+';border-radius:12px;padding:18px 16px;margin-bottom:16px;">'
+    +'<table style="width:100%;border-collapse:collapse;direction:rtl;"><tr><td style="text-align:center;padding:0;border:none;">'
+    +'<div style="font-size:12px;font-weight:700;color:#475569;margin-bottom:10px;">التوصية النهائية</div>'
+    +'<div style="font-size:22px;font-weight:800;color:'+recClr+';line-height:1.3;">'+recTxt+'</div>'
+    +'<div style="font-size:12px;color:#475569;margin-top:10px;line-height:1.6;">'+recSub+'</div>'
+    +(rpt.fail&&rpt.fail.length>0?'<div style="font-size:10px;color:#b45309;margin-top:8px;">* بيانات '+rpt.fail.join(' و ')+' غير متوفرة</div>':'')
+    +'</td></tr></table></div>'
 
+    +'<div style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;">بيانات البحث</div>'
     +'<div style="'+c1+'margin-bottom:14px;">'
-    +'<table style="width:100%;border-collapse:collapse;"><tr>'
-    +'<td style="vertical-align:top;padding:0;border:none;text-align:right;">'
-    +'<div style="font-size:10px;color:rgba(255,255,255,0.35);">كلمة البحث</div>'
-    +'<div style="font-size:16px;font-weight:700;color:#63b3ed;margin-top:3px;word-wrap:break-word;">'+rpt.q+'</div>'
+    +'<table style="width:100%;border-collapse:collapse;direction:rtl;"><tr>'
+    +'<td style="vertical-align:top;padding:0;border:none;text-align:right;width:58%;">'
+    +'<div style="font-size:11px;color:#64748b;">كلمة البحث</div>'
+    +'<div style="font-size:16px;font-weight:700;color:#1d4ed8;margin-top:4px;word-wrap:break-word;line-height:1.4;">'+qSafe+'</div>'
     +'</td>'
-    +'<td style="vertical-align:top;text-align:left;padding:0;border:none;white-space:nowrap;">'
-    +'<div style="font-size:10px;color:rgba(255,255,255,0.35);">التاريخ والوقت</div>'
-    +'<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:3px;direction:ltr;">'+ds+'</div>'
-    +'<div style="font-size:13px;color:rgba(255,255,255,0.6);direction:ltr;">'+ts+'</div>'
+    +'<td style="vertical-align:top;text-align:left;padding:0 8px 0 0;border:none;white-space:nowrap;">'
+    +'<div style="font-size:11px;color:#64748b;">التاريخ والوقت</div>'
+    +'<div style="font-size:12px;color:#334155;margin-top:4px;direction:ltr;text-align:left;">'+ds+'<br>'+ts+'</div>'
     +'</td>'
     +'</tr></table></div>'
 
-    +'<table style="width:100%;border-collapse:collapse;margin-bottom:14px;"><tr>'
-    +'<td style="padding:0 4px 0 0;width:33%;vertical-align:top;border:none;">'
+    +'<div style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;">ملخص النتائج</div>'
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:12px;direction:rtl;"><tr>'
+    +'<td style="padding:0 5px 0 0;width:33%;vertical-align:top;border:none;">'
     +'<div style="'+c1+'">'
-    +'<div style="font-size:24px;font-weight:800;color:#fff;">'+rpt.total+'</div>'
-    +'<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">إجمالي النتائج</div>'
+    +'<div style="font-size:10px;font-weight:700;color:#64748b;margin-bottom:4px;">إجمالي النتائج</div>'
+    +'<div style="font-size:28px;font-weight:800;color:#0f172a;line-height:1;">'+rpt.total+'</div>'
     +'</div></td>'
-    +'<td style="padding:0 2px;width:33%;vertical-align:top;border:none;">'
+    +'<td style="padding:0 4px;width:33%;vertical-align:top;border:none;">'
     +'<div style="'+c1+'">'
-    +'<div style="font-size:24px;font-weight:800;color:#fc8181;">'+blockN+'</div>'
-    +'<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">تمنع البيع</div>'
+    +'<div style="font-size:10px;font-weight:700;color:#64748b;margin-bottom:4px;">تمنع البيع</div>'
+    +'<div style="font-size:28px;font-weight:800;color:#dc2626;line-height:1;">'+blockN+'</div>'
     +'</div></td>'
-    +'<td style="padding:0 0 0 4px;width:33%;vertical-align:top;border:none;">'
+    +'<td style="padding:0 0 0 5px;width:33%;vertical-align:top;border:none;">'
     +'<div style="'+c1+'">'
-    +'<div style="font-size:24px;font-weight:800;color:#f6e05e;">'+contactN+'</div>'
-    +'<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">تتطلب تحقق</div>'
+    +'<div style="font-size:10px;font-weight:700;color:#64748b;margin-bottom:4px;">تتطلب تحقق</div>'
+    +'<div style="font-size:28px;font-weight:800;color:#ca8a04;line-height:1;">'+contactN+'</div>'
     +'</div></td>'
     +'</tr></table>'
 
-    +'<div style="font-size:11px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:14px;">'+sbText+'</div>';
+    +'<div style="font-size:11px;color:#475569;text-align:center;margin-bottom:14px;padding:8px;background:#f8fafc;border-radius:8px;">'+sbText+'</div>';
 
     if(blk){
         h+='<div style="margin-bottom:14px;">'
-        +'<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:8px;">تفاصيل المنع والتحقق</div>'
+        +'<div style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;">تفاصيل المنع والتحقق</div>'
         +blk+'</div>';
     }
 
-    h+='<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px;margin-bottom:14px;">'
-    +'<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.35);margin-bottom:8px;">حالة الخوادم ('+rpt.ok.length+'/'+remoteSrc.length+' متصل)</div>'
+    h+='<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:10px;">'
+    +'<div style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;">حالة الخوادم</div>'
+    +'<div style="font-size:12px;color:#334155;margin-bottom:10px;">'+rpt.ok.length+' من '+remoteSrc.length+' متصل'+(rpt.ok.length===remoteSrc.length?' — <span style="color:#047857;font-weight:700;">الكل جاهز</span>':' — <span style="color:#b45309;font-weight:700;">تنبيه: مصدر غير متاح</span>')+'</div>'
     +'<div>'+svr+'</div>'+inc+'</div>'
 
-    +'<div style="text-align:center;font-size:9px;color:rgba(255,255,255,0.2);margin-top:4px;">'
+    +'<div style="text-align:center;font-size:9px;color:#94a3b8;margin-top:4px;">'
     +'فهرس &copy; '+now.getFullYear()+' &middot; نظام فهرسة العملاء والكشف عن المخالفات'
     +'</div></div>';
 
@@ -1468,28 +1481,38 @@ function captureResults(){
     wrap.innerHTML=h;
     document.body.appendChild(wrap);
 
+    /* تشغيل html2canvas بأقل تأخير ممكن حتى لا تنتهي صلاحية user activation لنسخ الحافظة */
     setTimeout(function(){
-        html2canvas(wrap.firstChild,{backgroundColor:null,scale:3,useCORS:true,logging:false}).then(function(canvas){
+        html2canvas(wrap.firstChild,{backgroundColor:'#ffffff',scale:3,useCORS:true,logging:false}).then(function(canvas){
             wrap.remove();
             if(btn){btn.innerHTML=origHTML;btn.disabled=false;}
             _copyImage(canvas,ds,ts);
         }).catch(function(){wrap.remove();if(btn){btn.innerHTML=origHTML;btn.disabled=false;}});
-    },150);
+    },0);
 }
 
 function _copyImage(canvas,ds,ts){
-    // Try Clipboard API first (only works on HTTPS)
-    if(window.isSecureContext&&navigator.clipboard&&typeof ClipboardItem!=='undefined'){
-        canvas.toBlob(function(blob){
-            navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){
-                _rToast('تم نسخ التقرير للحافظة');
-            }).catch(function(){
-                _showReportOverlay(canvas,ds,ts);
-            });
-        },'image/png');
+    function fallback(){ _showReportOverlay(canvas,ds,ts); }
+    if(!navigator.clipboard||typeof ClipboardItem==='undefined'){
+        fallback();
         return;
     }
-    _showReportOverlay(canvas,ds,ts);
+    canvas.toBlob(function(blob){
+        if(!blob){ fallback(); return; }
+        var strategies=[
+            function(){ return new ClipboardItem({'image/png':Promise.resolve(blob)}); },
+            function(){ return new ClipboardItem({'image/png':blob}); }
+        ];
+        function attempt(i){
+            if(i>=strategies.length){ fallback(); return; }
+            var item;
+            try{ item=strategies[i](); }catch(e){ attempt(i+1); return; }
+            navigator.clipboard.write([item]).then(function(){
+                _rToast('تم نسخ التقرير للحافظة');
+            }).catch(function(){ attempt(i+1); });
+        }
+        attempt(0);
+    },'image/png');
 }
 
 function _showReportOverlay(canvas,ds,ts){
