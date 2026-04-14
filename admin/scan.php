@@ -263,7 +263,7 @@ try {
         <div id="violations-table" style="display:none;max-width:900px;margin:0 auto;"></div>
 
         <div class="scan-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('صُنع بـ') ?> <i class="fa fa-heart"></i> <?= _e('بواسطة MÜJEER') ?></a>
+            <?php include __DIR__ . '/includes/fahras-footer-credits.php'; ?>
             &nbsp;&middot;&nbsp;
             &copy; <?= _e('فهرس') ?> <?= date('Y') ?>
         </div>

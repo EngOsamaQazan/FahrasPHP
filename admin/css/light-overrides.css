@@ -358,7 +358,14 @@ body.light-theme .clients-page .clients-card .xcrud .nav-tabs > li.active > a:fo
 body.light-theme .clients-page .clients-footer {
     background: rgba(0, 0, 0, 0.03) !important;
     border-top: 1px solid #e2e8f0 !important;
-    color: #94a3b8 !important;
+    color: #64748b !important;
+}
+body.light-theme .clients-page .clients-footer .fahras-credits-line {
+    color: #1e293b !important;
+}
+body.light-theme .clients-page .clients-footer .fahras-credits-vibes .fahras-credits-icon {
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.12)) !important;
+    opacity: 1 !important;
 }
 body.light-theme .clients-page .clients-footer a {
     color: #64748b !important;
@@ -1518,9 +1525,14 @@ body.light-theme .text-muted { color: #6b7280 !important; }
 body.light-theme .footer {
     background: #f8fafc !important;
     border-top: 1px solid #e2e8f0;
-    color: #94a3b8;
+    color: #64748b;
 }
-body.light-theme .footer .text-muted { color: #94a3b8 !important; }
+body.light-theme .footer .text-muted { color: #64748b !important; }
+body.light-theme .footer .fahras-credits-line { color: #1e293b !important; }
+body.light-theme .footer .fahras-credits-vibes .fahras-credits-icon {
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.12)) !important;
+    opacity: 1 !important;
+}
 body.light-theme .footer a { color: #64748b !important; }
 
 /* ── Well / Breadcrumbs ──────────────────────────────────────────── */
@@ -1840,10 +1852,13 @@ body.light-theme .fahras-page .contract-actions .btn-icon:hover {
 body.light-theme .fahras-page .fahras-footer {
     background: rgba(0,0,0,0.03) !important;
     border-top: 1px solid #e2e8f0 !important;
-    color: #94a3b8 !important;
+    color: #64748b !important;
 }
-body.light-theme .fahras-page .fahras-footer a { color: #64748b !important; }
-body.light-theme .fahras-page .fahras-footer a:hover { color: #334155 !important; }
+body.light-theme .fahras-page .fahras-footer .fahras-credits-line { color: #1e293b !important; }
+body.light-theme .fahras-page .fahras-footer .fahras-credits-vibes .fahras-credits-icon {
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.12)) !important;
+    opacity: 1 !important;
+}
 
 /* ── Code / Pre ──────────────────────────────────────────────────── */
 

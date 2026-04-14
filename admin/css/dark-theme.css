@@ -965,6 +965,14 @@ hr {
     color: #e53e3e !important;
 }
 
+body.dark-theme .footer .fahras-credits-line {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+body.dark-theme .footer .fahras-credits-vibes .fahras-credits-icon {
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.35)) !important;
+    opacity: 1 !important;
+}
+
 /* ── 16. Form Signin (Login) ──────────────────────────────────────── */
 
 .form-signin {

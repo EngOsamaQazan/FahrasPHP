@@ -414,6 +414,10 @@
 .clients-footer a { color: rgba(255,255,255,0.35); text-decoration: none; }
 .clients-footer a:hover { color: rgba(255,255,255,0.6); }
 .clients-footer .fa-heart { color: #e53e3e; }
+.clients-footer .fahras-credits-line { color: rgba(255,255,255,0.5); }
+.clients-footer .fahras-credits-vibes .fahras-credits-icon {
+    filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.25));
+}
 .clients-page ~ footer.footer { display: none !important; }
 </style>
 
@@ -491,7 +495,7 @@
         </div>
 
         <div class="clients-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('صُنع بـ')?> <i class="fa fa-heart"></i> <?=_e('بواسطة MÜJEER')?></a>
+            <?php include __DIR__ . '/includes/fahras-footer-credits.php'; ?>
             &nbsp;&middot;&nbsp;
             &copy; <?=_e('فهرس')?> <?=date('Y')?>
         </div>

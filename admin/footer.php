@@ -7,7 +7,7 @@ if (!isset($token)) {
   <footer class="footer hidden-print">
     <div class="container">
       <p class="text-muted">
-        <a href="https://fb.com/mujeer.world" target="_blank"><?=_e('صُنع بـ')?> <i class="red fa fa-heart"></i> <?=_e('بواسطة MÜJEER')?></a>
+        <?php include __DIR__ . '/includes/fahras-footer-credits.php'; ?>
           <span class="pull-right">&copy; <?=_e('فهرس')?> <?=date('Y')?></span>
         </p>
     </div>

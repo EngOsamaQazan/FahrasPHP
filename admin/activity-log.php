@@ -329,7 +329,7 @@ $actionLabels = [
         <div class="al-footer-note"><i class="fa fa-info-circle"></i> <?= _e('عرض آخر 500 سجل') ?></div>
 
         <div class="activity-footer">
-            <a href="https://fb.com/mujeer.world" target="_blank"><?= _e('صُنع بـ') ?> <i class="fa fa-heart"></i> <?= _e('بواسطة MÜJEER') ?></a>
+            <?php include __DIR__ . '/includes/fahras-footer-credits.php'; ?>
             &nbsp;&middot;&nbsp;
             &copy; <?= _e('فهرس') ?> <?= date('Y') ?>
         </div>
