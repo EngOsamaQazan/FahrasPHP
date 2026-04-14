@@ -166,16 +166,16 @@ $accounts = $db->get_all('accounts');
     font-family: 'Almarai', sans-serif !important;
     direction: rtl;
 }
-.dark-theme .datepicker-picker {
-    background: #1e293b !important;
-    color: #e2e8f0 !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+body.light-theme .datepicker-picker {
+    background: #fff !important;
+    color: #1e293b !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
 }
-.dark-theme .datepicker-cell:not(.disabled):hover {
-    background: rgba(99, 179, 237, 0.15) !important;
+body.light-theme .datepicker-cell:not(.disabled):hover {
+    background: rgba(37, 99, 235, 0.08) !important;
 }
-.dark-theme .datepicker-cell.selected,
-.dark-theme .datepicker-cell.selected:hover {
+body.light-theme .datepicker-cell.selected,
+body.light-theme .datepicker-cell.selected:hover {
     background: #2563eb !important;
     color: #fff !important;
 }

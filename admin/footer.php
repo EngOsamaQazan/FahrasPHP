@@ -40,29 +40,6 @@ if (!isset($token)) {
 		jQuery(document).on("xcrudafterdepend", function(event, container, data) {
 		    jQuery(container).find('select[name="' + data.name + '"]').select2({theme: "bootstrap", dir: "<?=_e('rtl')?>"});
 		});
-
-		function toggleFahrasTheme(e) {
-		    if (e) e.preventDefault();
-		    var current = localStorage.getItem('fahras_theme') || 'light';
-		    var next = (current === 'dark') ? 'light' : 'dark';
-		    localStorage.setItem('fahras_theme', next);
-		    document.cookie = 'fahras_theme=' + next + ';path=/;max-age=' + (86400 * 365);
-		    var link = document.getElementById('dark-theme-link');
-		    var icon = document.getElementById('themeToggleIcon');
-		    if (next === 'light') {
-		        if (link) link.disabled = true;
-		        document.body.className = document.body.className.replace('dark-theme', 'light-theme');
-		        document.documentElement.classList.add('light-theme');
-		        document.documentElement.classList.remove('dark-theme');
-		        if (icon) { icon.className = 'fal fa-moon'; }
-		    } else {
-		        if (link) link.disabled = false;
-		        document.body.className = document.body.className.replace('light-theme', 'dark-theme');
-		        document.documentElement.classList.add('dark-theme');
-		        document.documentElement.classList.remove('light-theme');
-		        if (icon) { icon.className = 'fal fa-sun'; }
-		    }
-		}
 	</script>    
   </body>
 </html>

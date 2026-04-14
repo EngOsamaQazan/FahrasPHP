@@ -16,8 +16,6 @@ $user = auth_user();
 setcookie('language', $user['language'] ?? 'ar', time() + (86400 * 30), "/");
 
 $lang = $user['language'] ?? 'ar';
-$currentTheme = $_COOKIE['fahras_theme'] ?? 'light';
-$isDark = ($currentTheme !== 'light');
 ?>
 <!DOCTYPE html>
 <html lang="<?= $lang ?>">
@@ -59,23 +57,10 @@ $isDark = ($currentTheme !== 'light');
     <?php if ($lang == 'ar') { ?>
     <link rel="stylesheet" type="text/css" href="/admin/css/rtl.css?ver=<?=time()?>">
     <?php } ?>
-    <link id="dark-theme-link" rel="stylesheet" type="text/css" href="/admin/css/dark-theme.css?ver=<?=time()?>"<?= $isDark ? '' : ' disabled' ?>>
     <link rel="stylesheet" type="text/css" href="/admin/css/light-overrides.css?ver=<?=time()?>">
-    <script>
-    (function(){
-      var t = localStorage.getItem('fahras_theme') || '<?= $currentTheme ?>';
-      var link = document.getElementById('dark-theme-link');
-      if (t === 'light') {
-        if (link) link.disabled = true;
-        document.documentElement.classList.add('light-theme');
-      } else {
-        if (link) link.disabled = false;
-        document.documentElement.classList.remove('light-theme');
-      }
-    })();
-    </script>
+    <script>document.documentElement.classList.add('light-theme');</script>
   </head>
-  <body class="<?= $isDark ? 'dark-theme' : 'light-theme' ?>">
+  <body class="light-theme">
 	<nav class="navbar navbar-inverse">
 	  <div class="container">
 	    <div class="navbar-header">
@@ -128,11 +113,6 @@ $isDark = ($currentTheme !== 'light');
             <?php } ?>
 	      </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li>
-            <a href="#" onclick="toggleFahrasTheme(event)" title="<?= $isDark ? _e('الوضع الفاتح') : _e('الوضع الداكن') ?>">
-              <i class="fal <?= $isDark ? 'fa-sun' : 'fa-moon' ?>" id="themeToggleIcon"></i>
-            </a>
-          </li>
           <?php if ($lang == 'en') { ?>
           <li><a href="?lang=ar"><i class="fal fa-flag"></i> العربية</a></li>
           <?php } else { ?>
