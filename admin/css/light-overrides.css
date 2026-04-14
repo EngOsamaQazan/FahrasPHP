@@ -164,23 +164,32 @@ body.light-theme .clients-page .clients-header p {
     color: #64748b !important;
 }
 
-body.light-theme .clients-page .clients-search {
+body.light-theme .clients-page .clients-filter {
     background: #fff !important;
     border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    backdrop-filter: none !important;
 }
-body.light-theme .clients-page .clients-search:focus-within {
-    border-color: #3b82f6 !important;
-    box-shadow: 0 8px 40px rgba(59, 130, 246, 0.12) !important;
-}
-body.light-theme .clients-page .clients-search .si {
+body.light-theme .clients-page .clients-filter__icon {
     color: #94a3b8 !important;
 }
-body.light-theme .clients-page .clients-search input[type="text"] {
+body.light-theme .clients-page .clients-filter__input {
+    background: #fff !important;
+    border: 1px solid #d1d5db !important;
     color: #1e293b !important;
 }
-body.light-theme .clients-page .clients-search input::placeholder {
+body.light-theme .clients-page .clients-filter__input::placeholder {
     color: #94a3b8 !important;
+}
+body.light-theme .clients-page .clients-filter__input:focus {
+    border-color: #3b82f6 !important;
+}
+body.light-theme .clients-page .clients-filter .btn-view {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+    color: #fff !important;
+}
+body.light-theme .clients-page .clients-filter .btn-view:hover {
+    filter: brightness(1.05);
 }
 
 body.light-theme .clients-page .search-active-bar {
@@ -215,7 +224,7 @@ body.light-theme .clients-page .clients-card .xcrud-top-actions {
     border-bottom: 1px solid #e2e8f0 !important;
 }
 body.light-theme .clients-page .clients-card .xcrud-top-actions .btn-success {
-    background: linear-gradient(135deg, #15803d 0%, #16a34a 100%) !important;
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
     color: #fff !important;
     border: none !important;
 }
@@ -268,21 +277,53 @@ body.light-theme .clients-page .clients-card .xcrud-list td a:not(.btn):hover {
 
 body.light-theme .clients-page .clients-card .xcrud-list td .btn-primary,
 body.light-theme .clients-page .clients-card .xcrud-list td a.btn-primary {
-    background: #eff6ff !important;
-    border: 1px solid #93c5fd !important;
-    color: #1d4ed8 !important;
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+    border: none !important;
+    color: #fff !important;
 }
 body.light-theme .clients-page .clients-card .xcrud-list td .btn-primary:hover {
-    background: #dbeafe !important;
+    filter: brightness(1.05);
+}
+
+/* عمود الإجراءات: XCRUD يستخدم warning/info وليس primary */
+body.light-theme .clients-page .clients-card .xcrud-actions a.btn-warning {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+    border: none !important;
+    color: #fff !important;
+}
+body.light-theme .clients-page .clients-card .xcrud-actions a.btn-warning:hover {
+    filter: brightness(1.05);
+}
+body.light-theme .clients-page .clients-card .xcrud-actions a.btn-info,
+body.light-theme .clients-page .clients-card .xcrud-actions a.btn-default {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+}
+body.light-theme .clients-page .clients-card .xcrud-actions a.btn-info:hover,
+body.light-theme .clients-page .clients-card .xcrud-actions a.btn-default:hover {
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+}
+body.light-theme .clients-page .clients-card .xcrud-actions a.btn-inverse {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #475569 !important;
+}
+body.light-theme .clients-page .clients-card .xcrud-actions a.btn-inverse:hover {
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
 }
 
 body.light-theme .clients-page .clients-card .xcrud-list td .btn-danger,
-body.light-theme .clients-page .clients-card .xcrud-list td a.btn-danger {
+body.light-theme .clients-page .clients-card .xcrud-list td a.btn-danger,
+body.light-theme .clients-page .clients-card .xcrud-actions a.btn-danger {
     background: #fef2f2 !important;
     border: 1px solid #fecaca !important;
     color: #b91c1c !important;
 }
-body.light-theme .clients-page .clients-card .xcrud-list td .btn-danger:hover {
+body.light-theme .clients-page .clients-card .xcrud-list td .btn-danger:hover,
+body.light-theme .clients-page .clients-card .xcrud-actions a.btn-danger:hover {
     background: #fee2e2 !important;
 }
 
@@ -1131,6 +1172,11 @@ body.light-theme .sales-page .company-card .cc-stat-val {
 body.light-theme .sales-page .detail-section h3 {
     color: #1e293b !important;
 }
+body.light-theme .sales-page .detail-table-wrap {
+    background: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
 body.light-theme .sales-page .detail-table {
     background: #fff !important;
     color: #334155 !important;
@@ -1153,7 +1199,14 @@ body.light-theme .sales-page .detail-empty {
 body.light-theme .sales-page .sales-footer {
     background: rgba(0, 0, 0, 0.03) !important;
     border-top: 1px solid #e2e8f0 !important;
-    color: #94a3b8 !important;
+    color: #64748b !important;
+}
+body.light-theme .sales-page .sales-footer .fahras-credits-line {
+    color: #1e293b !important;
+}
+body.light-theme .sales-page .sales-footer .fahras-credits-vibes .fahras-credits-icon {
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.12)) !important;
+    opacity: 1 !important;
 }
 body.light-theme .sales-page .sales-footer a {
     color: #64748b !important;

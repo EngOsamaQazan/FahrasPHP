@@ -22,6 +22,9 @@
 		'created_on' => 'تاريخ الإنشاء',
 		'added_by' => 'أضيف بواسطة',
 		'image' => 'الصورة',
+		'remaining_amount' => 'المبلغ المتبقي',
+		'is_guarantor' => 'كفيل',
+		'employment_type' => 'نوع التوظيف',
 	];
 
 	$en_labels = [
@@ -41,6 +44,9 @@
 		'created_on' => 'Created On',
 		'added_by' => 'Added By',
 		'image' => 'Image',
+		'remaining_amount' => 'Remaining amount',
+		'is_guarantor' => 'Guarantor',
+		'employment_type' => 'Employment type',
 	];
 
 	$labels = ($lang == 'ar') ? $ar_labels : $en_labels;
@@ -48,78 +54,149 @@
 ?>
 
 <style>
-/* ── Page Shell ──────────────────────────────────────── */
+/* ── Page Shell (مطابق لتقرير المبيعات) ───────────────── */
 .clients-page {
     background: linear-gradient(180deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
     min-height: calc(100vh - 50px);
     margin: -20px -15px -60px;
     padding: 30px 20px 60px;
     color: #e0e6ed;
+    font-family: 'Almarai', sans-serif;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
 }
-.clients-page .container { max-width: 1200px; }
+.clients-page *,
+.clients-page *::before,
+.clients-page *::after {
+    box-sizing: border-box;
+}
+.clients-page .container {
+    width: 100%;
+    max-width: 100%;
+}
 
 .clients-header {
     text-align: center;
     margin-bottom: 24px;
 }
 .clients-header h1 {
-    color: #fff; font-size: 24px; font-weight: 800; margin: 0 0 6px;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
+    color: #fff;
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 .clients-header p { color: rgba(255,255,255,0.4); font-size: 12px; margin: 0; }
 
-/* ── Search ──────────────────────────────────────────── */
-.clients-search {
-    max-width: 640px;
-    margin: 0 auto 24px;
+/* ── بحث — نفس أسلوب .sales-filter ───────────────────── */
+.clients-filter {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.clients-filter__icon {
+    color: rgba(255,255,255,0.45);
+    font-size: 16px;
+    flex-shrink: 0;
+}
+/* موبايل: عموديًا لا نستخدم flex-basis بقيمة طول — وإلا يُفسَّر كارتفاع (~200px) */
+.clients-filter__input {
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    color: #e2e8f0;
+    padding: 9px 14px;
+    font-size: 13px;
+    line-height: 1.4;
+    font-family: 'Almarai', sans-serif;
+    outline: none;
+    box-shadow: none;
+    resize: none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+.clients-filter__input::placeholder {
+    color: rgba(255,255,255,0.35);
+    font-size: 13px;
+}
+.clients-filter__input:focus {
+    border-color: rgba(99,179,237,0.5);
+}
+@media (min-width: 577px) {
+    .clients-filter__input {
+        flex: 1 1 200px;
+        width: auto;
+    }
+}
+.clients-filter .btn-view {
+    background: linear-gradient(135deg, #1f62b9, #2980b9);
+    border: none;
+    color: #fff;
+    padding: 9px 22px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Almarai', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    line-height: 1.4;
+}
+.clients-filter .btn-view:hover {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+}
+
+.search-active-bar {
+    max-width: 900px;
+    margin: -8px auto 20px;
     display: flex;
     align-items: center;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 14px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    overflow: hidden;
-    transition: all 0.3s;
-    backdrop-filter: blur(12px);
-}
-.clients-search:focus-within {
-    border-color: rgba(99,179,237,0.5);
-    box-shadow: 0 8px 40px rgba(31,98,185,0.35), 0 0 0 1px rgba(99,179,237,0.2);
-}
-.clients-search .si {
-    color: rgba(255,255,255,0.3); font-size: 18px; padding: 0 16px; flex-shrink: 0;
-}
-.clients-search input[type="text"] {
-    flex: 1; border: none !important; padding: 14px 0 !important; font-size: 14px !important;
-    font-family: 'Almarai', sans-serif !important; background: transparent !important;
-    color: #e2e8f0 !important; outline: none !important; min-width: 0;
-    box-shadow: none !important; height: auto !important;
-}
-.clients-search input::placeholder { color: rgba(255,255,255,0.3); font-size: 13px; }
-.clients-search .btn-search {
-    background: linear-gradient(135deg, #1f62b9 0%, #2980b9 100%);
-    border: none; color: #fff; padding: 14px 24px; font-size: 14px;
-    font-family: 'Almarai', sans-serif; font-weight: 700; cursor: pointer;
-    transition: all 0.2s; white-space: nowrap; border-radius: 0;
-}
-.clients-search .btn-search:hover { background: linear-gradient(135deg, #2980b9, #3498db); }
-.search-active-bar {
-    max-width: 640px; margin: -12px auto 20px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 16px; border-radius: 0 0 12px 12px;
-    background: rgba(31,98,185,0.15); border: 1px solid rgba(31,98,185,0.2);
-    border-top: none; font-size: 12px; color: rgba(255,255,255,0.5);
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 0 0 12px 12px;
+    background: rgba(31,98,185,0.15);
+    border: 1px solid rgba(31,98,185,0.2);
+    border-top: none;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
 }
 .search-active-bar a { color: #63b3ed; font-weight: 700; }
 
-/* ── Glass Card (wraps XCRUD) ────────────────────────── */
+/* ── Glass Card (XCRUD) — زوايا كتقرير المبيعات ──────── */
 .clients-card {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
+    border-radius: 14px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.25);
     backdrop-filter: blur(12px);
     overflow: hidden;
+    max-width: min(1200px, 100%);
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* ── XCRUD Overrides inside .clients-card ────────────── */
@@ -140,15 +217,37 @@
     gap: 8px;
 }
 .clients-card .xcrud-top-actions .btn-group { order: 2; }
+/* أزرار عليا — مطابقة تقرير المبيعات: btn-view + btn-today */
 .clients-card .xcrud-top-actions .btn-success {
-    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%) !important;
-    border: none !important; border-radius: 10px !important; padding: 8px 18px !important;
-    font-family: 'Almarai' !important; font-weight: 700 !important; font-size: 13px !important;
+    background: linear-gradient(135deg, #1f62b9, #2980b9) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 9px 22px !important;
+    color: #fff !important;
+    font-family: 'Almarai' !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+    transition: all 0.2s !important;
+}
+.clients-card .xcrud-top-actions .btn-success:hover {
+    background: linear-gradient(135deg, #2980b9, #3498db) !important;
 }
 .clients-card .xcrud-top-actions .btn-default {
-    background: rgba(255,255,255,0.08) !important; color: #e0e6ed !important;
-    border: 1px solid rgba(255,255,255,0.1) !important; border-radius: 10px !important;
-    padding: 8px 16px !important; font-family: 'Almarai' !important; font-size: 13px !important;
+    background: rgba(255,255,255,0.08) !important;
+    color: #93c5fd !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 8px !important;
+    padding: 9px 16px !important;
+    font-family: 'Almarai' !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    transition: all 0.2s !important;
+}
+.clients-card .xcrud-top-actions .btn-default:hover {
+    background: rgba(255,255,255,0.14) !important;
+    color: #fff !important;
 }
 
 /* Table */
@@ -195,32 +294,98 @@
 /* Row number */
 .clients-card .xcrud-num { color: rgba(255,255,255,0.25) !important; font-size: 11px !important; }
 
-/* Action buttons in rows */
+/* Action buttons in rows — مواءمة كاملة مع هوية تقرير المبيعات */
 .clients-card .xcrud-list td .btn,
-.clients-card .xcrud-actions a {
+.clients-card .xcrud-actions a.btn {
     border-radius: 8px !important;
-    padding: 5px 12px !important;
+    padding: 6px 12px !important;
     font-size: 12px !important;
-    font-family: 'Almarai' !important;
+    font-weight: 700 !important;
+    font-family: 'Almarai', sans-serif !important;
+    line-height: 1.4 !important;
     transition: all 0.2s !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
 }
+.clients-card td.xcrud-actions {
+    vertical-align: middle !important;
+}
+.clients-card .xcrud-actions .btn-group {
+    display: inline-flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    align-items: center !important;
+}
+
+/* XCRUD الافتراضي: تعديل=warning، عرض=info، حذف=danger — نعيد ربطها بالهوية */
 .clients-card .xcrud-list td .btn-primary,
-.clients-card .xcrud-list td a.btn-primary {
-    background: rgba(31,98,185,0.2) !important;
-    border: 1px solid rgba(31,98,185,0.3) !important;
+.clients-card .xcrud-list td a.btn-primary,
+.clients-card .xcrud-actions a.btn-primary {
+    background: linear-gradient(135deg, #1f62b9, #2980b9) !important;
+    border: none !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    padding: 6px 14px !important;
+}
+.clients-card .xcrud-list td .btn-primary:hover,
+.clients-card .xcrud-actions a.btn-primary:hover {
+    background: linear-gradient(135deg, #2980b9, #3498db) !important;
+    color: #fff !important;
+}
+
+.clients-card .xcrud-actions a.btn-warning {
+    background: linear-gradient(135deg, #1f62b9, #2980b9) !important;
+    border: none !important;
+    color: #fff !important;
+}
+.clients-card .xcrud-actions a.btn-warning:hover {
+    background: linear-gradient(135deg, #2980b9, #3498db) !important;
+    color: #fff !important;
+}
+
+.clients-card .xcrud-actions a.btn-info {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
     color: #93c5fd !important;
 }
-.clients-card .xcrud-list td .btn-primary:hover {
-    background: rgba(31,98,185,0.4) !important;
+.clients-card .xcrud-actions a.btn-info:hover {
+    background: rgba(255,255,255,0.14) !important;
+    color: #fff !important;
 }
+
+.clients-card .xcrud-actions a.btn-default {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    color: #93c5fd !important;
+}
+.clients-card .xcrud-actions a.btn-default:hover {
+    background: rgba(255,255,255,0.14) !important;
+    color: #fff !important;
+}
+
+.clients-card .xcrud-actions a.btn-inverse {
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    color: #cbd5e1 !important;
+}
+.clients-card .xcrud-actions a.btn-inverse:hover {
+    background: rgba(255,255,255,0.12) !important;
+    color: #fff !important;
+}
+
 .clients-card .xcrud-list td .btn-danger,
-.clients-card .xcrud-list td a.btn-danger {
+.clients-card .xcrud-list td a.btn-danger,
+.clients-card .xcrud-actions a.btn-danger {
     background: rgba(229,62,62,0.15) !important;
     border: 1px solid rgba(229,62,62,0.25) !important;
     color: #fc8181 !important;
 }
-.clients-card .xcrud-list td .btn-danger:hover {
+.clients-card .xcrud-list td .btn-danger:hover,
+.clients-card .xcrud-actions a.btn-danger:hover {
     background: rgba(229,62,62,0.3) !important;
+    color: #fff !important;
 }
 
 /* Nav bar (pagination + limit + search) */
@@ -316,11 +481,22 @@
     border-bottom-color: transparent !important; color: #e2e8f0 !important;
 }
 
+.clients-page ~ footer.footer { display: none !important; }
+
+@supports not (overflow: clip) {
+    .clients-page { overflow-x: hidden; }
+}
+
 /* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 991px) {
+    .clients-page { padding: 22px 16px 56px; }
+}
+
 @media (max-width: 992px) {
     .clients-card .xcrud-list-container {
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
     }
     .clients-card .xcrud-list.table {
         min-width: 700px;
@@ -328,11 +504,9 @@
 }
 
 @media (max-width: 768px) {
-    .clients-page { padding: 16px 10px 60px; }
+    .clients-page { padding: 16px 12px 52px; margin: -10px -15px -60px; }
     .clients-header h1 { font-size: 20px; }
-    .clients-search { margin: 0 auto 16px; border-radius: 12px; }
-    .clients-search input[type="text"] { font-size: 13px !important; padding: 12px 0 !important; }
-    .clients-search .btn-search { padding: 12px 16px; font-size: 13px; }
+    .clients-filter { padding: 14px 16px; margin-bottom: 20px; }
     .clients-card { border-radius: 12px; }
 
     /* Card layout on mobile */
@@ -393,23 +567,67 @@
     .clients-card .xcrud-nav .pagination { justify-content: center; }
 }
 
+@media (max-width: 576px) {
+    .clients-page {
+        margin-left: 0;
+        margin-right: 0;
+        padding-left: max(10px, env(safe-area-inset-left, 0px));
+        padding-right: max(10px, env(safe-area-inset-right, 0px));
+    }
+    .clients-header h1 { font-size: 17px; line-height: 1.35; }
+    .clients-header p { font-size: 11px; line-height: 1.55; }
+    .clients-filter {
+        flex-direction: column;
+        align-items: stretch;
+        align-content: flex-start;
+        gap: 10px;
+    }
+    .clients-filter__icon { align-self: flex-start; }
+    .clients-filter__input {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        min-height: 44px;
+        max-height: none;
+    }
+    .clients-filter .btn-view {
+        flex: 0 0 auto !important;
+        width: 100%;
+        min-height: 44px;
+    }
+    .search-active-bar {
+        margin-top: -4px;
+        font-size: 11px;
+        padding: 8px 12px;
+    }
+}
+
 @media (max-width: 480px) {
-    .clients-search input[type="text"] { font-size: 12px !important; }
-    .clients-search .si { padding: 0 12px; font-size: 16px; }
-    .clients-search .btn-search { padding: 12px 14px; font-size: 0; }
-    .clients-search .btn-search .fa { font-size: 16px; }
+    .clients-filter__input { font-size: 12px !important; }
+    .clients-filter .btn-view { padding: 12px 14px; font-size: 0; }
+    .clients-filter .btn-view .fa { font-size: 16px; }
     .search-active-bar { font-size: 11px; padding: 6px 12px; }
 }
 
-/* ── Footer ──────────────────────────────────────────── */
+@media (max-width: 380px) {
+    .clients-page { padding-left: 8px; padding-right: 8px; }
+    .clients-header h1 { font-size: 16px; }
+}
+
+/* ── Footer (مطابق لتقرير المبيعات) ─────────────────── */
 .clients-footer {
     background: rgba(0,0,0,0.2);
     border-top: 1px solid rgba(255,255,255,0.06);
-    padding: 16px 0;
+    padding: 16px 12px;
     margin-top: 40px;
     text-align: center;
     font-size: 12px;
     color: rgba(255,255,255,0.25);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    row-gap: 6px;
 }
 .clients-footer a { color: rgba(255,255,255,0.35); text-decoration: none; }
 .clients-footer a:hover { color: rgba(255,255,255,0.6); }
@@ -418,7 +636,6 @@
 .clients-footer .fahras-credits-vibes .fahras-credits-icon {
     filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.25));
 }
-.clients-page ~ footer.footer { display: none !important; }
 </style>
 
 <div class="clients-page">
@@ -428,13 +645,13 @@
             <p><?= ($lang == 'ar') ? 'إدارة سجلات العملاء والعقود' : 'Manage client records and contracts' ?></p>
         </div>
 
-        <form action="" method="get" class="clients-search" id="clients-search-form">
-            <i class="fa fa-search si"></i>
-            <input type="text" id="clients-search-input" name="search"
+        <form action="" method="get" class="clients-filter" id="clients-search-form">
+            <span class="clients-filter__icon" aria-hidden="true"><i class="fa fa-search"></i></span>
+            <input type="text" id="clients-search-input" name="search" class="clients-filter__input"
                    value="<?= htmlspecialchars($searchTerm, ENT_QUOTES, 'UTF-8') ?>"
                    placeholder="<?= ($lang == 'ar') ? 'ابحث بالاسم، الرقم الوطني، الهاتف، جهة العمل...' : 'Search by name, national ID, phone, workplace...' ?>"
                    autocomplete="off" />
-            <button type="submit" class="btn-search"><i class="fa fa-search"></i> <?= ($lang == 'ar') ? 'بحث' : 'Search' ?></button>
+            <button type="submit" class="btn-view"><i class="fa fa-search"></i> <?= ($lang == 'ar') ? 'بحث' : 'Search' ?></button>
         </form>
 
         <?php if (!empty($searchTerm)): ?>
@@ -466,6 +683,10 @@
 		$xcrud->label($labels);
 
 		$xcrud->columns('account,name,national_id,phone,contracts,status,sell_date');
+
+		$xcrud->column_callback('sell_date', 'fahras_format_sell_date_list', 'functions.php');
+		$xcrud->column_callback('employment_type', 'fahras_translate_employment_type', 'functions.php');
+		$xcrud->column_callback('is_guarantor', 'fahras_translate_is_guarantor', 'functions.php');
 
 		$xcrud->fields('created_on', true);
 

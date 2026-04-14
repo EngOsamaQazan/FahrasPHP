@@ -101,6 +101,19 @@ $periodLabel = $isToday
     padding: 30px 20px 60px;
     color: #e0e6ed;
     font-family: 'Almarai', sans-serif;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+}
+.sales-page *,
+.sales-page *::before,
+.sales-page *::after {
+    box-sizing: border-box;
+}
+.sales-page .container {
+    width: 100%;
+    max-width: 100%;
 }
 .sales-header {
     text-align: center;
@@ -123,6 +136,25 @@ $periodLabel = $isToday
     gap: 12px;
     align-items: center;
     flex-wrap: wrap;
+    width: 100%;
+}
+.sales-filter input[type="date"] {
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+.sales-filter .btn-view,
+.sales-filter .btn-today {
+    flex: 0 0 auto;
+    min-width: 0;
+}
+@media (min-width: 577px) {
+    .sales-filter input[type="date"] {
+        flex: 0 1 168px;
+        width: auto;
+        max-width: 100%;
+    }
 }
 .sales-filter label {
     color: rgba(255,255,255,0.5);
@@ -172,10 +204,11 @@ $periodLabel = $isToday
 
 .stats-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
     gap: 14px;
     max-width: 900px;
     margin: 0 auto 24px;
+    width: 100%;
 }
 .stat-card {
     background: rgba(255,255,255,0.05);
@@ -201,10 +234,11 @@ $periodLabel = $isToday
 
 .companies-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
     gap: 14px;
     max-width: 900px;
     margin: 0 auto 24px;
+    width: 100%;
 }
 .company-card {
     background: rgba(255,255,255,0.04);
@@ -220,6 +254,8 @@ $periodLabel = $isToday
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
     margin-bottom: 12px;
 }
 .company-card .cc-name {
@@ -269,6 +305,7 @@ $periodLabel = $isToday
 .detail-section {
     max-width: 900px;
     margin: 0 auto 24px;
+    width: 100%;
 }
 .detail-section h3 {
     color: #93c5fd;
@@ -277,16 +314,22 @@ $periodLabel = $isToday
     margin: 0 0 14px;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
 }
 .detail-table-wrap {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 14px;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    max-width: 100%;
 }
 .detail-table {
     width: 100%;
+    min-width: 640px;
     border-collapse: collapse;
 }
 .detail-table th {
@@ -305,6 +348,11 @@ $periodLabel = $isToday
     color: #e0e6ed;
     border-bottom: 1px solid rgba(255,255,255,0.04);
 }
+.detail-table td:nth-child(2) {
+    white-space: normal;
+    word-break: break-word;
+    max-width: 200px;
+}
 .detail-table tr:hover td { background: rgba(255,255,255,0.03); }
 .detail-table .empty-row td {
     text-align: center;
@@ -318,23 +366,81 @@ $periodLabel = $isToday
 .sales-footer {
     background: rgba(0,0,0,0.2);
     border-top: 1px solid rgba(255,255,255,0.06);
-    padding: 16px 0;
+    padding: 16px 12px;
     margin-top: 40px;
     text-align: center;
     font-size: 12px;
     color: rgba(255,255,255,0.25);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    row-gap: 6px;
 }
 .sales-footer a { color: rgba(255,255,255,0.35); text-decoration: none; }
 .sales-footer a:hover { color: rgba(255,255,255,0.6); }
 .sales-footer .fa-heart { color: #e53e3e; }
 .sales-page ~ footer.footer { display: none !important; }
 
+@supports not (overflow: clip) {
+    .sales-page { overflow-x: hidden; }
+}
+
+@media (max-width: 991px) {
+    .sales-page { padding: 22px 16px 56px; }
+    .stats-row { grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); }
+}
+
 @media (max-width: 768px) {
-    .sales-page { padding: 16px 10px 60px; margin: -10px -15px -60px; }
+    .sales-page { padding: 16px 12px 52px; margin: -10px -15px -60px; }
+    .sales-header h1 { font-size: 20px; }
     .companies-grid { grid-template-columns: 1fr; }
-    .stats-row { grid-template-columns: 1fr 1fr; }
-    .sales-filter { flex-direction: column; }
-    .detail-table-wrap { overflow-x: auto; }
+    .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sales-filter { padding: 14px 16px; }
+    .detail-table th,
+    .detail-table td { padding: 8px 10px; font-size: 12px; }
+}
+
+@media (max-width: 576px) {
+    .sales-page {
+        margin-left: 0;
+        margin-right: 0;
+        padding-left: max(10px, env(safe-area-inset-left, 0px));
+        padding-right: max(10px, env(safe-area-inset-right, 0px));
+    }
+    .sales-header h1 { font-size: 17px; line-height: 1.35; }
+    .sales-header p { font-size: 11px; line-height: 1.55; }
+    .stats-row { grid-template-columns: 1fr; }
+    .stat-card { padding: 14px 16px; }
+    .stat-card .stat-value { font-size: 22px; }
+    .sales-filter {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .sales-filter label { width: 100%; }
+    .sales-filter input[type="date"],
+    .sales-filter .btn-view,
+    .sales-filter .btn-today {
+        flex: 0 0 auto !important;
+        width: 100%;
+        min-height: 44px;
+    }
+    .company-card { padding: 14px 16px; }
+    .detail-section h3 { font-size: 14px; }
+    .detail-table { min-width: 580px; }
+}
+
+/* أجهزة الطي والشاشات الضيقة جداً */
+@media (max-width: 380px) {
+    .sales-page { padding-left: 8px; padding-right: 8px; }
+    .sales-header h1 { font-size: 16px; }
+    .stat-card .stat-value { font-size: 20px; }
+    .companies-grid { grid-template-columns: minmax(0, 1fr); }
+    .detail-table { min-width: 520px; }
+    .detail-table th,
+    .detail-table td { padding: 7px 8px; font-size: 11px; }
 }
 </style>
 
@@ -372,7 +478,7 @@ $periodLabel = $isToday
         <?php if (!empty($localData) || !empty($remoteData)) { ?>
         <div class="companies-grid">
             <?php foreach ($localData as $row) { ?>
-            <div class="company-card" onclick="filterTable('local', '<?= htmlspecialchars($row['company_name'], ENT_QUOTES) ?>')">
+            <div class="company-card" onclick="filterTable('local', '<?= htmlspecialchars($row['company_name'], ENT_QUOTES) ?>', this)">
                 <div class="cc-header">
                     <span class="cc-name"><?= htmlspecialchars($row['company_name']) ?></span>
                     <span class="cc-badge local"><?= _e('محلي') ?></span>
@@ -393,7 +499,7 @@ $periodLabel = $isToday
                 $srcKey = $row['company_key'];
                 $srcLabel = $sourceLabels[$srcKey] ?? $srcKey;
             ?>
-            <div class="company-card" onclick="filterTable('remote', '<?= htmlspecialchars($srcKey, ENT_QUOTES) ?>')">
+            <div class="company-card" onclick="filterTable('remote', '<?= htmlspecialchars($srcKey, ENT_QUOTES) ?>', this)">
                 <div class="cc-header">
                     <span class="cc-name"><?= htmlspecialchars($srcLabel) ?></span>
                     <span class="cc-badge <?= htmlspecialchars($srcKey) ?>"><?= htmlspecialchars($srcLabel) ?></span>
@@ -508,7 +614,7 @@ $periodLabel = $isToday
 <script>
 var currentFilter = null;
 
-function filterTable(type, companyKey) {
+function filterTable(type, companyKey, el) {
     var rows = document.querySelectorAll('#sales-detail-table tbody tr[data-type]');
     var label = document.getElementById('filter-label');
     var cards = document.querySelectorAll('.company-card');
@@ -535,7 +641,7 @@ function filterTable(type, companyKey) {
     label.textContent = '(' + shown + ' <?= _e('نتائج') ?>)';
 
     cards.forEach(function(c) { c.classList.remove('active'); });
-    event.currentTarget.classList.add('active');
+    if (el) el.classList.add('active');
     reNumber();
 }
 
