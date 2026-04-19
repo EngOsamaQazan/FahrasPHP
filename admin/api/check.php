@@ -298,17 +298,27 @@ try {
                     $reasonCode = 'ALLOWED';
                     break;
             }
+            // Deduplicate matches across local+remote sources by
+            // (canonical_account, contract_id || national_id+sell_date).
+            $seenMatch = [];
             foreach ($best['results'] ?? [] as $r) {
+                $accountName = resolveAccountName($r);
+                $contractId  = $r['id'] ?? $r['cid'] ?? '';
+                $effDate     = getEffectiveDate($r) ?? '';
+                $dedupeKey   = $accountName . '|' . ($contractId !== '' ? $contractId : ($r['national_id'] ?? '') . '@' . $effDate);
+                if (isset($seenMatch[$dedupeKey])) continue;
+                $seenMatch[$dedupeKey] = true;
+
                 $matchesOut[] = [
-                    'account'          => resolveAccountName($r),
+                    'account'          => $accountName,
                     'source'           => $r['_source'] ?? 'local',
                     'name'             => $r['name'] ?? '',
                     'national_id'      => $r['national_id'] ?? '',
                     'phone'            => $r['phone'] ?? '',
                     'remaining_amount' => isset($r['remaining_amount']) ? (float)$r['remaining_amount'] : null,
                     'status'           => $r['status'] ?? '',
-                    'contract_id'      => $r['id'] ?? $r['cid'] ?? null,
-                    'created_on'       => getEffectiveDate($r),
+                    'contract_id'      => $contractId !== '' ? $contractId : null,
+                    'created_on'       => $effDate ?: null,
                     'first_account'    => $best['first_account']  ?? null,
                     'first_phone'      => $best['first_phone']    ?? null,
                 ];

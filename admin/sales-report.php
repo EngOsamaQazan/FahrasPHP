@@ -15,7 +15,7 @@ $sourceLabels = [
     'namaa' => 'نماء',
     'bseel' => 'بسيل',
     'watar' => 'وتر',
-    'majd' => 'المجد',
+    'majd'  => 'عالم المجد',
 ];
 
 $localStmt = $db->prepare("

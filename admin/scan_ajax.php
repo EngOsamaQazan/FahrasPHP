@@ -28,13 +28,14 @@ set_time_limit(600);
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
+// Canonical short names — MUST match accounts.name (see canonicalAccountName()).
 $sourceLabels = [
     'zajal' => 'زجل',
     'jadal' => 'جدل',
     'namaa' => 'نماء',
     'bseel' => 'بسيل',
     'watar' => 'وتر',
-    'majd' => 'المجد',
+    'majd'  => 'عالم المجد',
 ];
 
 $sourceUrls = [
@@ -383,7 +384,7 @@ switch ($action) {
             $startTime = microtime(true);
             $newViolations = 0;
             $checked = 0;
-            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'];
+            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'عالم المجد'];
 
             // العميل المحلي أقدم → الشركة الخارجية مخالفة
             $stmt2 = $db->run("
@@ -482,7 +483,7 @@ switch ($action) {
             $startTime = microtime(true);
             $newViolations = 0;
             $checked = 0;
-            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'];
+            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'عالم المجد'];
 
             $stmt = $db->run("
                 SELECT r1.name, r1.national_id,

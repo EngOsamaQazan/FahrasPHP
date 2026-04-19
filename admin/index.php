@@ -891,7 +891,7 @@ if (!empty($_GET['search'])) {
     $_failKeys = array_map(fn($e) => $e['label'], $remote_errors);
     $_failLabelsSet = array_flip($_failKeys);
     $_responded = [];
-    foreach (['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'] as $_rk => $_rl) {
+    foreach (['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'عالم المجد'] as $_rk => $_rl) {
         if (!isset($_failLabelsSet[$_rl])) $_responded[] = $_rk;
     }
     $_failLabels = $_failKeys;

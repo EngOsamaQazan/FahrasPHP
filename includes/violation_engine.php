@@ -45,6 +45,7 @@ function analyzeSearchResults($allResults) {
 
     foreach ($groups as $key => $entries) {
         $entries = filterEntriesWithContracts($entries);
+        $entries = dedupeEntriesByCompanyAndContract($entries);
 
         if (empty($entries)) continue;
 
@@ -296,6 +297,57 @@ function analyzeSearchResults($allResults) {
 }
 
 /**
+ * Drop duplicate contract rows that the same client has across the local
+ * cache (`clients`/`remote_clients`) AND the live remote API. They are
+ * literally the same contract — keeping both inflates the company list in
+ * the verdict message ("جدل و شركة جدل للتقسيط") and double-counts the
+ * remaining amount in scans.
+ *
+ * Two rows are considered the same contract when they share the canonical
+ * company name AND the contract identifier (id/cid). When no identifier is
+ * available (Zajal/Bseel rows that key by national_id + sell_date), we
+ * fall back to (company, national_id, effective_date).
+ *
+ * Preference: rows with richer data (non-null remaining_amount) win.
+ */
+function dedupeEntriesByCompanyAndContract(array $entries): array {
+    $bestByKey = [];
+    $orderByKey = [];
+    $order = 0;
+
+    foreach ($entries as $e) {
+        $company = canonicalAccountName(resolveAccountName($e));
+        $cid     = trim((string)($e['id'] ?? $e['cid'] ?? ''));
+        if ($cid === '' || $cid === '0') {
+            $key = $company . '|N=' . trim((string)($e['national_id'] ?? '')) . '|D=' . (getEffectiveDate($e) ?? '');
+        } else {
+            $key = $company . '|C=' . $cid;
+        }
+
+        if (!isset($bestByKey[$key])) {
+            $bestByKey[$key]  = $e;
+            $orderByKey[$key] = $order++;
+            continue;
+        }
+
+        // Prefer the row with a non-null remaining_amount; otherwise keep
+        // the existing one (first-seen wins).
+        $existing = $bestByKey[$key];
+        $newHas   = isset($e['remaining_amount']) && $e['remaining_amount'] !== null && $e['remaining_amount'] !== '';
+        $oldHas   = isset($existing['remaining_amount']) && $existing['remaining_amount'] !== null && $existing['remaining_amount'] !== '';
+        if ($newHas && !$oldHas) {
+            $bestByKey[$key] = $e;
+        }
+    }
+
+    // Restore original order so chronological sorting downstream is stable.
+    uksort($bestByKey, function ($a, $b) use ($orderByKey) {
+        return $orderByKey[$a] <=> $orderByKey[$b];
+    });
+    return array_values($bestByKey);
+}
+
+/**
  * Filter out entries with no identifiable data.
  * Keeps entries that have any of: id, created_on, or sell_date.
  * APIs without contract-level data (Zajal/Bseel/local) use sell_date or created_on.
@@ -400,6 +452,85 @@ function groupClientResults($results) {
 }
 
 /**
+ * Canonical short names for every Fahras-tracked company.
+ *
+ * Each remote API labels the same company differently (e.g. "جدل" vs
+ * "شركة جدل للتقسيط"), and the local `accounts` table uses yet another
+ * spelling for some sources. Without normalization, a single client that
+ * appears in BOTH the local `clients` table AND its own remote API ends up
+ * counted as two different companies in the violation engine — producing
+ * messages like "العميل نشط مع جدل و شركة جدل للتقسيط".
+ *
+ * The canonical name returned here MUST exactly match the value stored in
+ * the local `accounts.name` column for that company, so that downstream
+ * lookups (phone, account id, RBAC) keep working.
+ */
+function _getAccountAliasMap(): array {
+    static $map = null;
+    if ($map !== null) return $map;
+
+    $map = [
+        // zajal
+        'زجل'                       => 'زجل',
+        // jadal — accounts.name = "جدل"
+        'جدل'                       => 'جدل',
+        'شركة جدل'                  => 'جدل',
+        'شركة جدل للتقسيط'          => 'جدل',
+        // namaa — accounts.name = "نماء"
+        'نماء'                      => 'نماء',
+        'شركة نماء'                 => 'نماء',
+        'شركة نماء للتقسيط'         => 'نماء',
+        // watar — accounts.name = "وتر"
+        'وتر'                       => 'وتر',
+        'شركة وتر'                  => 'وتر',
+        'شركة وتر للتقسيط'          => 'وتر',
+        // majd — accounts.name = "عالم المجد"
+        'المجد'                     => 'عالم المجد',
+        'عالم المجد'                => 'عالم المجد',
+        'عالم المجد للتقسيط'        => 'عالم المجد',
+        'شركة عالم المجد'           => 'عالم المجد',
+        'شركة عالم المجد للتقسيط'   => 'عالم المجد',
+        // bseel — accounts.name = "بسيل"; Bseel app sometimes returns the
+        // owner name "عمار" instead of the company name.
+        'بسيل'                      => 'بسيل',
+        'عمار'                      => 'بسيل',
+        'شركة بسيل'                 => 'بسيل',
+        'شركة بسيل للتقسيط'         => 'بسيل',
+    ];
+    return $map;
+}
+
+/**
+ * Normalize a free-form company label coming from any source (local DB,
+ * remote API row, or hard-coded source map) into its canonical short name.
+ *
+ * Rules:
+ *   1. Exact match against the alias map (handles every well-known variant).
+ *   2. Defensive regex `شركة <X> للتقسيط` → `<X>` so brand new tenants are
+ *      handled gracefully without a code change.
+ *   3. Anything else is returned trimmed but otherwise unchanged.
+ */
+function canonicalAccountName($name): string {
+    $name = trim((string)$name);
+    if ($name === '') return '';
+
+    $collapsed = preg_replace('/\s+/u', ' ', $name);
+    $map = _getAccountAliasMap();
+    if (isset($map[$collapsed])) return $map[$collapsed];
+
+    if (preg_match('/^شركة\s+(.+?)\s+للتقسيط$/u', $collapsed, $m)) {
+        $core = trim($m[1]);
+        return $map[$core] ?? $core;
+    }
+    if (preg_match('/^شركة\s+(.+)$/u', $collapsed, $m)) {
+        $core = trim($m[1]);
+        return $map[$core] ?? $core;
+    }
+
+    return $collapsed;
+}
+
+/**
  * Load all accounts into a static cache (only ~7 rows).
  */
 function _getAccountsCache(): array {
@@ -421,32 +552,38 @@ function _getAccountsCache(): array {
 
 /**
  * Resolve account name from either local DB id or API string label.
+ *
+ * The returned name is ALWAYS the canonical short name (matches the
+ * `accounts.name` column for the corresponding company) so that the
+ * violation engine never sees the same company under two different labels.
  */
 function resolveAccountName($entry) {
-    $nameAliases = ['عمار' => 'بسيل'];
     $accounts = _getAccountsCache();
 
     $acc = $entry['account'] ?? '';
     if (is_numeric($acc) && (int)$acc > 0) {
         $row = $accounts['by_id'][(int)$acc] ?? null;
-        $resolved = $row ? $row['name'] : $acc;
-        return $nameAliases[$resolved] ?? $resolved;
+        $resolved = $row ? $row['name'] : (string)$acc;
+        return canonicalAccountName($resolved);
     }
     if (!empty($acc)) {
-        $resolved = (string)$acc;
-        return $nameAliases[$resolved] ?? $resolved;
+        return canonicalAccountName((string)$acc);
     }
 
+    // Source map values are kept aligned with `accounts.name`.
     $sourceMap = [
         'zajal' => 'زجل',
         'jadal' => 'جدل',
         'namaa' => 'نماء',
         'bseel' => 'بسيل',
         'watar' => 'وتر',
-        'majd' => 'المجد',
+        'majd'  => 'عالم المجد',
     ];
     $source = $entry['_source'] ?? '';
-    return $sourceMap[$source] ?? (string)$acc;
+    if (isset($sourceMap[$source])) {
+        return canonicalAccountName($sourceMap[$source]);
+    }
+    return canonicalAccountName((string)$acc);
 }
 
 /**
@@ -807,10 +944,12 @@ function searchPartyAcrossSources($name, $nationalId = '') {
 
 /**
  * Get phone number for the account (from cached accounts table or from entry data).
+ *
+ * Looks up by account id, then by canonical company name (so that aliases
+ * like "شركة جدل للتقسيط" or "عمار" all resolve to the right phone).
  */
 function getAccountPhone($entry) {
     $accounts = _getAccountsCache();
-    $reverseAliases = ['بسيل' => 'عمار'];
 
     $acc = $entry['account'] ?? '';
 
@@ -822,21 +961,10 @@ function getAccountPhone($entry) {
         }
     }
 
-    $accountName = (string)$acc;
-    if (!empty($accountName)) {
-        $row = $accounts['by_name'][$accountName] ?? null;
-        if ($row) {
-            $ph = $row['phone'] ?? $row['mobile'] ?? '';
-            if ($ph !== '') return $ph;
-        }
-        $altName = $reverseAliases[$accountName] ?? null;
-        if ($altName) {
-            $row = $accounts['by_name'][$altName] ?? null;
-            if ($row) {
-                $ph = $row['phone'] ?? $row['mobile'] ?? '';
-                if ($ph !== '') return $ph;
-            }
-        }
+    $candidates = [];
+    if (!empty($acc)) {
+        $candidates[] = (string)$acc;
+        $candidates[] = canonicalAccountName((string)$acc);
     }
 
     $sourceMap = [
@@ -845,23 +973,18 @@ function getAccountPhone($entry) {
         'namaa' => 'نماء',
         'bseel' => 'بسيل',
         'watar' => 'وتر',
-        'majd' => 'المجد',
+        'majd'  => 'عالم المجد',
     ];
     $source = $entry['_source'] ?? '';
     if (!empty($source) && isset($sourceMap[$source])) {
-        $srcName = $sourceMap[$source];
-        $row = $accounts['by_name'][$srcName] ?? null;
+        $candidates[] = $sourceMap[$source];
+    }
+
+    foreach (array_unique(array_filter($candidates)) as $name) {
+        $row = $accounts['by_name'][$name] ?? null;
         if ($row) {
             $ph = $row['phone'] ?? $row['mobile'] ?? '';
             if ($ph !== '') return $ph;
-        }
-        $altName = $reverseAliases[$srcName] ?? null;
-        if ($altName) {
-            $row = $accounts['by_name'][$altName] ?? null;
-            if ($row) {
-                $ph = $row['phone'] ?? $row['mobile'] ?? '';
-                if ($ph !== '') return $ph;
-            }
         }
     }
 
@@ -878,7 +1001,7 @@ function getAccountPhone($entry) {
 function silentViolationCheck($clientData, $accountId) {
     global $db;
 
-    $violatingAccount = $db->get_var('accounts', ['id' => $accountId], ['name']) ?: $accountId;
+    $violatingAccount = canonicalAccountName($db->get_var('accounts', ['id' => $accountId], ['name']) ?: (string)$accountId);
     if (isExcludedAccount((string)$violatingAccount)) return;
 
     $name       = trim($clientData['name'] ?? '');
@@ -1073,9 +1196,10 @@ function batchScanViolations() {
 
         foreach ($localFirst as $dup) {
             $localAccountName = $db->get_var('accounts', ['id' => $dup['local_account']], ['name']) ?: $dup['local_account'];
-            $remoteAccountName = ucfirst($dup['remote_source']);
-            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'];
-            $remoteAccountName = $sourceMap[$dup['remote_source']] ?? $remoteAccountName;
+            $localAccountName = canonicalAccountName((string)$localAccountName);
+
+            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'عالم المجد'];
+            $remoteAccountName = canonicalAccountName($sourceMap[$dup['remote_source']] ?? ucfirst($dup['remote_source']));
 
             if ($localAccountName === $remoteAccountName) continue;
 
@@ -1113,8 +1237,10 @@ function batchScanViolations() {
 
         foreach ($remoteFirst as $dup) {
             $localAccountName = $db->get_var('accounts', ['id' => $dup['local_account']], ['name']) ?: $dup['local_account'];
-            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'];
-            $remoteAccountName = $sourceMap[$dup['remote_source']] ?? ucfirst($dup['remote_source']);
+            $localAccountName = canonicalAccountName((string)$localAccountName);
+
+            $sourceMap = ['zajal' => 'زجل', 'jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'عالم المجد'];
+            $remoteAccountName = canonicalAccountName($sourceMap[$dup['remote_source']] ?? ucfirst($dup['remote_source']));
 
             if ($localAccountName === $remoteAccountName) continue;
 
@@ -1139,8 +1265,10 @@ function recordViolationFromDuplicate($name, $nationalId, $firstAccount, $firstS
 
     $entitledName  = is_numeric($firstAccount) ? ($db->get_var('accounts', ['id' => (int)$firstAccount], ['name']) ?: $firstAccount) : $firstAccount;
     $violatingName = is_numeric($secondAccount) ? ($db->get_var('accounts', ['id' => (int)$secondAccount], ['name']) ?: $secondAccount) : $secondAccount;
+    $entitledName  = canonicalAccountName((string)$entitledName);
+    $violatingName = canonicalAccountName((string)$violatingName);
 
-    return recordViolationFromData($name, $nationalId, (string)$entitledName, $firstSource, $firstDate, $remaining, $firstStatus, (string)$violatingName, $secondSource, $secondDate);
+    return recordViolationFromData($name, $nationalId, $entitledName, $firstSource, $firstDate, $remaining, $firstStatus, $violatingName, $secondSource, $secondDate);
 }
 
 /**
@@ -1148,6 +1276,11 @@ function recordViolationFromDuplicate($name, $nationalId, $firstAccount, $firstS
  */
 function recordViolationFromData($name, $nationalId, $entitledAccount, $entitledSource, $entitledDate, $remaining, $entitledStatus, $violatingAccount, $violatingSource, $violatingDate, $partyType = 'عميل') {
     global $db;
+
+    // Always store the canonical short name so that aggregations / reports
+    // never split the same company across two rows.
+    $entitledAccount  = canonicalAccountName((string)$entitledAccount);
+    $violatingAccount = canonicalAccountName((string)$violatingAccount);
 
     if (isExcludedAccount($entitledAccount) || isExcludedAccount($violatingAccount)) return false;
 

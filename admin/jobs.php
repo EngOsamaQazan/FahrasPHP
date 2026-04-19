@@ -97,7 +97,7 @@ if (!empty($searchQuery) || !empty($selectedWork)) {
                 'namaa' => ['url' => "https://jadal.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=erp&search={$enc}", 'label' => 'نماء', 'src' => 'namaa'],
                 'bseel' => ['url' => "https://bseel.com/FahrasBaselFullAPIs.php?token=bseel_fahras_2024&action=jobs&search={$enc}", 'label' => 'بسيل', 'src' => 'bseel'],
                 'watar' => ['url' => "https://watar.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=watar&search={$enc}", 'label' => 'وتر', 'src' => 'watar'],
-                'majd' => ['url' => "https://majd.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=majd&search={$enc}", 'label' => 'المجد', 'src' => 'majd'],
+                'majd' => ['url' => "https://majd.aqssat.co/fahras/jobs.php?token=b83ba7a49b72&db=majd&search={$enc}", 'label' => 'عالم المجد', 'src' => 'majd'],
             ];
 
             $remoteUrls = [];
@@ -185,7 +185,7 @@ if (!empty($searchQuery) || !empty($selectedWork)) {
 $remoteDetail = null;
 if (!empty($selectedSource) && !empty($selectedId)) {
     $dbMap = ['jadal' => 'jadal', 'namaa' => 'erp', 'watar' => 'watar', 'majd' => 'majd'];
-    $labelMap = ['jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'المجد'];
+    $labelMap = ['jadal' => 'جدل', 'namaa' => 'نماء', 'bseel' => 'بسيل', 'watar' => 'وتر', 'majd' => 'عالم المجد'];
 
     if ($selectedSource === 'bseel') {
         $searchTerm = $selectedWork ?: '';
