@@ -298,19 +298,56 @@ try {
                     $reasonCode = 'ALLOWED';
                     break;
             }
-            // Deduplicate matches across local+remote sources by
-            // (canonical_account, contract_id || national_id+sell_date).
-            $seenMatch = [];
-            foreach ($best['results'] ?? [] as $r) {
-                $accountName = resolveAccountName($r);
-                $contractId  = $r['id'] ?? $r['cid'] ?? '';
-                $effDate     = getEffectiveDate($r) ?? '';
-                $dedupeKey   = $accountName . '|' . ($contractId !== '' ? $contractId : ($r['national_id'] ?? '') . '@' . $effDate);
-                if (isset($seenMatch[$dedupeKey])) continue;
-                $seenMatch[$dedupeKey] = true;
+            // Collapse the matches list to one row per (company, person).
+            // Multiple contracts for the same person at the same company are
+            // noise in the UI — the user only needs to see "Ali matched at
+            // Jadal" once. We pick the most informative row per group:
+            //   1) prefer a row whose status is active over finished/canceled
+            //   2) within the same status class, prefer the largest remaining
+            //   3) within the same remaining, prefer the most recent date
+            $bestMatch = [];   // dedupe-key → row
+            $statusRank = function ($s) {
+                $s = strtolower(trim((string)$s));
+                if (in_array($s, ['منتهي', 'finished', 'completed', 'closed'], true)) return 0;
+                if (in_array($s, ['ملغي', 'canceled', 'cancelled'], true))             return 0;
+                return 1; // active / unknown / contact-needed
+            };
 
+            foreach ($best['results'] ?? [] as $r) {
+                $accountName = canonicalAccountName(resolveAccountName($r));
+                $personKey   = trim((string)($r['national_id'] ?? '')) !== ''
+                    ? 'N=' . $r['national_id']
+                    : 'M=' . trim((string)($r['name'] ?? ''));
+                $dedupeKey   = $accountName . '|' . $personKey;
+
+                if (!isset($bestMatch[$dedupeKey])) {
+                    $bestMatch[$dedupeKey] = $r;
+                    continue;
+                }
+
+                $cur = $bestMatch[$dedupeKey];
+                $newRank = $statusRank($r['status']   ?? '');
+                $oldRank = $statusRank($cur['status'] ?? '');
+                if ($newRank !== $oldRank) {
+                    if ($newRank > $oldRank) $bestMatch[$dedupeKey] = $r;
+                    continue;
+                }
+                $newRem = (float)($r['remaining_amount']   ?? 0);
+                $oldRem = (float)($cur['remaining_amount'] ?? 0);
+                if ($newRem !== $oldRem) {
+                    if ($newRem > $oldRem) $bestMatch[$dedupeKey] = $r;
+                    continue;
+                }
+                $newDate = strtotime(getEffectiveDate($r)   ?: '1970-01-01');
+                $oldDate = strtotime(getEffectiveDate($cur) ?: '1970-01-01');
+                if ($newDate > $oldDate) $bestMatch[$dedupeKey] = $r;
+            }
+
+            foreach ($bestMatch as $r) {
+                $contractId = $r['id'] ?? $r['cid'] ?? '';
+                $effDate    = getEffectiveDate($r) ?? '';
                 $matchesOut[] = [
-                    'account'          => $accountName,
+                    'account'          => canonicalAccountName(resolveAccountName($r)),
                     'source'           => $r['_source'] ?? 'local',
                     'name'             => $r['name'] ?? '',
                     'national_id'      => $r['national_id'] ?? '',
